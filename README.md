@@ -42,6 +42,13 @@ streamlit run pdf_research_assistant.py
 ```
 
 Streamlit will open the app in your browser automatically and will also print the local URL in the terminal. It usually uses `http://localhost:8501` unless that port is already in use.
+
+The Streamlit sidebar shows:
+
+- query count for the current session
+- total session cost
+- a button to clear the chat
+
 On first use, there is no search index yet. The first query will build it, and for a large PDF library this can take a significant amount of time.
 
 ### CLI
@@ -51,7 +58,20 @@ cd ~/gitrepos/pdf_research_assistant
 python query_papers.py
 ```
 
-Type a question in the UI or CLI to search your indexed PDFs and return a cited answer with page references.
+Type a question at the prompt to search your indexed PDFs and return a cited answer with page references. Type `quit` to exit.
+
+### Rebuild the Index
+
+```bash
+cd ~/gitrepos/pdf_research_assistant
+python rebuild_index.py
+```
+
+Use this when:
+
+- running the project for the first time and you want to build the index explicitly
+- you add new PDFs and want to rebuild before querying again
+- you want a terminal-only indexing run instead of letting the first query build the index
 
 ## Configuration
 
@@ -59,8 +79,6 @@ The app and CLI read configuration from environment variables and will also load
 
 By default, `INDEX_DIR` and `MANIFEST_PATH` are resolved relative to the repository root, so the project can be moved without changing code.
 `PAPER_DIR` can point to any folder on your system. If `manifest.csv` is present, it stores paths relative to that one common PDF root. If `manifest.csv` is absent, the app will index all PDFs under `PAPER_DIR`.
-
-An OpenAI API key is required for querying and for any indexing steps that need model calls. Set `OPENAI_API_KEY` in `.env` or in your shell environment before running the app.
 
 | Variable | Purpose | Default |
 | --- | --- | --- |
@@ -75,9 +93,7 @@ See `.env.example` for the expected keys. Leave `INDEX_DIR` and `MANIFEST_PATH` 
 
 ## Notes
 
-- On first use, there is no index yet. The first query builds it.
-- For a large PDF library, initial indexing can take a significant amount of time.
-- The index is stored in `INDEX_DIR`.
+- The search index is stored in the folder set by `INDEX_DIR`.
 - If `manifest.csv` exists, the app uses it to decide which PDFs are in scope and which metadata to use.
 - If `manifest.csv` does not exist, the app indexes all PDFs under `PAPER_DIR`.
 - Answers cite specific pages from your PDFs when available.
@@ -87,5 +103,4 @@ See `.env.example` for the expected keys. Leave `INDEX_DIR` and `MANIFEST_PATH` 
 1. Add the PDF under your configured `PAPER_DIR`.
 2. If you are using a manifest, add a row to `manifest.csv`.
 3. Rebuild the index with `python rebuild_index.py` before querying again.
-4. Start the UI with `streamlit run pdf_research_assistant.py`, or start the CLI with `python query_papers.py`.
-5. Ask a question about your PDFs.
+4. Start the UI or CLI and ask a question about your PDFs.
