@@ -84,7 +84,7 @@ By default, `INDEX_DIR` and `MANIFEST_PATH` are resolved relative to the reposit
 | --- | --- | --- |
 | `OPENAI_API_KEY` | OpenAI API key for PaperQA2 queries | unset |
 | `PAPER_DIR` | Common root folder containing your PDFs | required |
-| `INDEX_DIR` | Local PaperQA index directory | `<repo-root>/index` |
+| `INDEX_DIR` | Optional override for where the local PaperQA index is stored | `<repo-root>/index` |
 | `MANIFEST_PATH` | Optional CSV manifest of allowed PDFs | `<repo-root>/manifest.csv` |
 | `PDF_RESEARCH_ASSISTANT_SYNC_DIR` | Optional destination folder for post-push copies of `.env` and `manifest.csv` | unset |
 
