@@ -49,6 +49,11 @@ The Streamlit sidebar shows:
 - total session cost
 - a button to clear the chat
 
+Each assistant response also includes:
+
+- a `Copy answer` button that copies the full answer text to the clipboard on Windows
+- a `Show source passages` expander with the retrieved evidence passages used for the answer
+
 On first use, there is no search index yet. The first query will build it, and for a large PDF library this can take a significant amount of time.
 
 ### CLI
@@ -86,15 +91,19 @@ By default, `INDEX_DIR` and `MANIFEST_PATH` are resolved relative to the reposit
 | `PAPER_DIR` | Common root folder containing your PDFs | required |
 | `INDEX_DIR` | Optional override for where the local PaperQA index is stored | `<repo-root>/index` |
 | `MANIFEST_PATH` | Optional CSV manifest of allowed PDFs | `<repo-root>/manifest.csv` |
-| `PDF_RESEARCH_ASSISTANT_SYNC_DIR` | Optional destination folder for post-push copies of `.env` and `manifest.csv` | unset |
+| `PDF_RESEARCH_ASSISTANT_SYNC_DIR` | Optional destination folder for post-push copies of `.env`, `manifest.csv`, and your private `useful-commands.md` notes | unset |
 
 See `.env.example` for the expected keys. Leave `INDEX_DIR` and `MANIFEST_PATH` unset if you want to use the repo-root defaults.
+
+If `PDF_RESEARCH_ASSISTANT_SYNC_DIR` is set, the tracked `post-push` hook copies `.env` and `manifest.csv` when present. It also copies `useful-commands.md` if you have created a private local version for yourself.
 
 ## Notes
 
 - The search index is stored in the folder set by `INDEX_DIR`.
 - If `manifest.csv` exists, the app uses it to decide which PDFs are in scope and which metadata to use.
 - If `manifest.csv` does not exist, the app indexes all PDFs under `PAPER_DIR`.
+- `useful-commands.example.md` is a public-safe template. If you want a version with your own local paths ready to copy and paste, create `useful-commands.md` from it.
+- The app automatically ignores the specific broken loopback proxy placeholder `127.0.0.1:9` if it appears in `HTTP_PROXY`, `HTTPS_PROXY`, or `ALL_PROXY`.
 - Answers cite specific pages from your PDFs when available.
 
 ## Adding New PDFs

@@ -21,3 +21,7 @@ for file in .env manifest.csv; do
     cp "$file" "$DEST_DIR/"
   fi
 done
+
+if [ -f "useful-commands.md" ]; then
+  cp "useful-commands.md" "$DEST_DIR/"
+fi

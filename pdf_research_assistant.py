@@ -1,7 +1,10 @@
+import subprocess
 import traceback
+from pathlib import Path
 
 import streamlit as st
-from paperqa import ask
+from paperqa.agents.main import agent_query
+from paperqa.utils import run_or_ensure
 
 from bootstrap import ALLOWED_PATHS, USE_MANIFEST, build_settings, get_failed_files, get_indexed_doc_count
 
@@ -14,6 +17,37 @@ def flatten_exception_messages(exc, depth=0):
         for child in children:
             lines.extend(flatten_exception_messages(child, depth + 1))
     return lines
+
+
+def copy_to_clipboard(text: str) -> None:
+    clip_path = Path(r"C:\Windows\System32\clip.exe")
+    subprocess.run([str(clip_path)], input=text, text=True, check=True)
+
+
+def render_copy_button(text: str, key: str) -> None:
+    if st.button("Copy answer", key=key):
+        try:
+            copy_to_clipboard(text)
+        except Exception as exc:
+            st.error(f"Copy failed: {exc}")
+        else:
+            st.toast("Answer copied")
+
+
+def render_source_passages(contexts):
+    if not contexts:
+        return
+    with st.expander("Show source passages"):
+        for ctx in contexts:
+            text = getattr(ctx, "text", None)
+            if text is None:
+                continue
+            st.subheader(getattr(text, "name", "Source"))
+            st.write(getattr(ctx, "context", ""))
+            raw_text = getattr(text, "text", "")
+            if raw_text:
+                st.caption("Raw chunk text")
+                st.write(raw_text)
 
 
 @st.cache_resource
@@ -72,6 +106,8 @@ for item in st.session_state.history:
     with st.chat_message(item["role"]):
         st.markdown(item["content"])
         if item["role"] == "assistant" and "cost" in item:
+            render_copy_button(item["content"], key=f"copy_history_{item.get('id', 0)}")
+            render_source_passages(item.get("contexts", []))
             st.caption(f"Cost: ${item['cost']:.4f}")
 
 question = st.chat_input("Ask a question about your PDFs...")
@@ -84,9 +120,17 @@ if question:
     with st.chat_message("assistant"):
         with st.spinner("Searching PDFs..."):
             try:
-                response = ask(question, settings=get_settings())
+                settings = get_settings()
+                response = run_or_ensure(
+                    coro=agent_query(
+                        question,
+                        settings,
+                        agent_type=settings.agent.agent_type,
+                    )
+                )
                 answer = response.session.formatted_answer
                 cost = response.session.cost
+                contexts = list(getattr(response.session, "contexts", []) or [])
             except Exception as exc:
                 answer = (
                     "Indexing/search failed.\n\n"
@@ -97,14 +141,25 @@ if question:
                     "This usually means one document or a parsing/indexing step failed."
                 )
                 cost = 0.0
+                contexts = []
                 st.error(answer)
                 st.caption("Cost: $0.0000")
                 st.code("".join(traceback.format_exception(exc)))
             else:
                 st.markdown(answer)
+                render_copy_button(answer, key=f"copy_current_{len(st.session_state.history)}")
+                render_source_passages(contexts)
                 st.caption(f"Cost: ${cost:.4f}")
 
-    st.session_state.history.append({"role": "assistant", "content": answer, "cost": cost})
+    st.session_state.history.append(
+        {
+            "role": "assistant",
+            "id": len(st.session_state.history),
+            "content": answer,
+            "cost": cost,
+            "contexts": contexts,
+        }
+    )
     st.session_state.total_cost += cost
     st.session_state.query_count += 1
     st.rerun()
