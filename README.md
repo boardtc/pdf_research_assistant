@@ -1,6 +1,6 @@
 # PDF Research Assistant
 
-![Python 3.13.7](https://img.shields.io/badge/python-3.13.7-blue)
+![Python 3.11%2B](https://img.shields.io/badge/python-3.11%2B-blue)
 ![MIT License](https://img.shields.io/badge/license-MIT-green)
 ![PaperQA2](https://img.shields.io/badge/PaperQA2-FutureHouse-orange)
 
@@ -10,7 +10,7 @@ A local PDF Research Assistant built with [PaperQA2](https://github.com/Future-H
 
 ### Requirements
 
-- Python 3.13.7
+- Python 3.11 or newer
 - An OpenAI API key
 
 Install the Python dependencies:
