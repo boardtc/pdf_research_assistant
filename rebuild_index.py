@@ -1,13 +1,16 @@
 import asyncio
 
 from paperqa.agents.search import get_directory_index
-from bootstrap import ALLOWED_PATHS, build_settings, get_failed_files, get_indexed_doc_count
+from bootstrap import ALLOWED_PATHS, USE_MANIFEST, build_settings, get_failed_files, get_indexed_doc_count
 
 settings = build_settings()
 
 
 async def main():
-    print(f"Manifest PDFs: {len(ALLOWED_PATHS)}")
+    if USE_MANIFEST:
+        print(f"Manifest PDFs: {len(ALLOWED_PATHS)}")
+    else:
+        print("Manifest PDFs: manifest.csv not found; indexing all PDFs under PAPER_DIR")
     print(f"Indexed before run: {get_indexed_doc_count()}")
     await get_directory_index(settings=settings, build=True)
     print(f"Indexed after run: {get_indexed_doc_count()}")
