@@ -91,7 +91,7 @@ See `.env.example` for the expected keys. Leave `INDEX_DIR` and `MANIFEST_PATH` 
 
 `bootstrap.py` is internal shared runtime wiring for the UI, CLI, and rebuild script. In normal use, update `.env` rather than editing `bootstrap.py`.
 
-Optional: if you want your local `.env` and `manifest.csv` copied somewhere after each `git push`, set `PDF_RESEARCH_ASSISTANT_SYNC_DIR` in your shell environment. If it is unset, the tracked `post-push` hook does nothing.
+Optional: if you want your local `.env` and `manifest.csv` copied somewhere after each `git push`, set `PDF_RESEARCH_ASSISTANT_SYNC_DIR` in `.env` or in your shell environment. If it is unset, the tracked `post-push` hook does nothing.
 
 ## Notes
 
