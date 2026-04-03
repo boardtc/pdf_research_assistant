@@ -9,6 +9,7 @@ import os
 import pickle
 import zlib
 from pathlib import Path
+from urllib.parse import urlparse
 
 from dotenv import load_dotenv
 from paperqa import Settings
@@ -16,12 +17,29 @@ from paperqa.settings import AgentSettings, IndexSettings, ParsingSettings
 
 load_dotenv()
 
+PROXY_ENV_VARS = ("HTTP_PROXY", "HTTPS_PROXY", "ALL_PROXY")
+LOOPBACK_PROXY_HOSTS = {"127.0.0.1", "localhost", "::1"}
+
 PROJECT_ROOT = Path(__file__).resolve().parent
 DEFAULT_INDEX_DIR = PROJECT_ROOT / "index"
 DEFAULT_MANIFEST_PATH = PROJECT_ROOT / "manifest.csv"
 FAILED_DOCUMENT_ADD_ID = "ERROR"
 MODEL_NAME = "gpt-4o-mini"
 PDF_EXTENSIONS = {".pdf"}
+
+
+def sanitize_proxy_environment() -> None:
+    """Drop obviously broken loopback proxy placeholders from the process environment."""
+    for name in PROXY_ENV_VARS:
+        value = os.getenv(name)
+        if not value:
+            continue
+        parsed = urlparse(value)
+        if parsed.hostname in LOOPBACK_PROXY_HOSTS and parsed.port == 9:
+            os.environ.pop(name, None)
+
+
+sanitize_proxy_environment()
 
 
 def env_path(name: str, default: Path | None = None, required: bool = False) -> Path:
