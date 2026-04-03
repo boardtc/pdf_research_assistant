@@ -1,0 +1,6 @@
+.env
+manifest.csv
+index/
+index_*/
+__pycache__/
+*.pyc
