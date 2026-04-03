@@ -86,10 +86,9 @@ By default, `INDEX_DIR` and `MANIFEST_PATH` are resolved relative to the reposit
 | `PAPER_DIR` | Common root folder containing your PDFs | required |
 | `INDEX_DIR` | Local PaperQA index directory | `<repo-root>/index` |
 | `MANIFEST_PATH` | Optional CSV manifest of allowed PDFs | `<repo-root>/manifest.csv` |
+| `PDF_RESEARCH_ASSISTANT_SYNC_DIR` | Optional destination folder for post-push copies of `.env` and `manifest.csv` | unset |
 
 See `.env.example` for the expected keys. Leave `INDEX_DIR` and `MANIFEST_PATH` unset if you want to use the repo-root defaults.
-
-`bootstrap.py` is internal shared runtime wiring for the UI, CLI, and rebuild script. In normal use, update `.env` rather than editing `bootstrap.py`.
 
 Optional: if you want your local `.env` and `manifest.csv` copied somewhere after each `git push`, set `PDF_RESEARCH_ASSISTANT_SYNC_DIR` in `.env` or in your shell environment. If it is unset, the tracked `post-push` hook does nothing.
 
