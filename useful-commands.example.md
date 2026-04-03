@@ -53,7 +53,6 @@ Get-ChildItem -Recurse <repo-root>\index | Sort-Object LastWriteTime -Descending
 import csv, pickle, zlib
 from pathlib import Path
 
-manifest = Path(r'C:\Users\TOM.CORCORAN\gitrepos\pdf_research_assistant\manifest.csv')
 manifest = Path(r'<repo-root>\manifest.csv')
 index_root = Path(r'<repo-root>\index')
 
