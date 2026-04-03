@@ -4,3 +4,6 @@ index/
 index_*/
 __pycache__/
 *.pyc
+*.html
+Todo.md
+sandbox.md
