@@ -1,0 +1,13 @@
+#!/bin/sh
+
+set -eu
+
+DEST_DIR='H:/My Drive/Vital/pdf_research_assistant'
+
+mkdir -p "$DEST_DIR"
+
+for file in .env manifest.csv; do
+  if [ -f "$file" ]; then
+    cp "$file" "$DEST_DIR/"
+  fi
+done
