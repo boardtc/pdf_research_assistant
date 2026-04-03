@@ -2,7 +2,11 @@
 
 set -eu
 
-DEST_DIR='H:/My Drive/Vital/pdf_research_assistant'
+DEST_DIR="${PDF_RESEARCH_ASSISTANT_SYNC_DIR:-}"
+
+if [ -z "$DEST_DIR" ]; then
+  exit 0
+fi
 
 mkdir -p "$DEST_DIR"
 
