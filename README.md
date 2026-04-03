@@ -90,8 +90,6 @@ By default, `INDEX_DIR` and `MANIFEST_PATH` are resolved relative to the reposit
 
 See `.env.example` for the expected keys. Leave `INDEX_DIR` and `MANIFEST_PATH` unset if you want to use the repo-root defaults.
 
-Optional: if you want your local `.env` and `manifest.csv` copied somewhere after each `git push`, set `PDF_RESEARCH_ASSISTANT_SYNC_DIR` in `.env` or in your shell environment. If it is unset, the tracked `post-push` hook does nothing.
-
 ## Notes
 
 - The search index is stored in the folder set by `INDEX_DIR`.
