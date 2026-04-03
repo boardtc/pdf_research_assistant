@@ -78,6 +78,8 @@ Use this when:
 - you add new PDFs and want to rebuild before querying again
 - you want a terminal-only indexing run instead of letting the first query build the index
 
+See `useful-commands.example.md` for PowerShell commands that help check index build progress and troubleshoot rebuild issues. If you want a version with your own local paths ready to copy and paste, create `useful-commands.md` from it.
+
 ## Configuration
 
 The app and CLI read configuration from environment variables and will also load values from `.env` when present.
