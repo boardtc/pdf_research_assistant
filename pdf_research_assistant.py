@@ -3,7 +3,7 @@ import traceback
 import streamlit as st
 from paperqa import ask
 
-from bootstrap import ALLOWED_PATHS, build_settings, get_failed_files, get_indexed_doc_count
+from bootstrap import ALLOWED_PATHS, USE_MANIFEST, build_settings, get_failed_files, get_indexed_doc_count
 
 
 def flatten_exception_messages(exc, depth=0):
@@ -27,19 +27,25 @@ manifest_count = len(ALLOWED_PATHS)
 indexed_count = get_indexed_doc_count()
 failed_files = get_failed_files()
 
-if indexed_count == 0:
+if indexed_count == 0 and USE_MANIFEST:
     st.warning(
         f"Index not found. The first question will rebuild the index for {manifest_count} manifest PDFs, "
         "which may take a long time."
     )
     st.info("A rebuild starts only after you submit a question below.")
-elif indexed_count < manifest_count:
+elif USE_MANIFEST and indexed_count < manifest_count:
     st.warning(
         f"Index is incomplete: {indexed_count} of {manifest_count} manifest PDFs appear indexed. "
         "The next question should continue or trigger indexing work."
     )
+elif indexed_count == 0:
+    st.warning("Index not found. The first question will build the PDF index, which may take a long time.")
+    st.info("No manifest.csv was found, so all PDFs under PAPER_DIR are in scope.")
 else:
-    st.caption(f"Index available for {indexed_count} manifest PDFs.")
+    if USE_MANIFEST:
+        st.caption(f"Index available for {indexed_count} manifest PDFs.")
+    else:
+        st.caption(f"Index available for {indexed_count} PDFs under PAPER_DIR.")
 
 if failed_files:
     st.error(f"{len(failed_files)} PDF(s) failed to index.")

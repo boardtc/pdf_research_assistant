@@ -17,24 +17,38 @@ from paperqa.settings import AgentSettings, IndexSettings, ParsingSettings
 load_dotenv()
 
 PROJECT_ROOT = Path(__file__).resolve().parent
-DEFAULT_PAPER_DIR = Path("H:/My Drive/SETU/MATL/Assessment & Feedback")
 DEFAULT_INDEX_DIR = PROJECT_ROOT / "index"
 DEFAULT_MANIFEST_PATH = PROJECT_ROOT / "manifest.csv"
 FAILED_DOCUMENT_ADD_ID = "ERROR"
 MODEL_NAME = "gpt-4o-mini"
+PDF_EXTENSIONS = {".pdf"}
 
 
-def env_path(name: str, default: Path) -> Path:
+def env_path(name: str, default: Path | None = None, required: bool = False) -> Path:
     value = os.getenv(name)
-    return Path(value).expanduser() if value else default
+    if value:
+        return Path(value).expanduser()
+    if default is not None:
+        return default
+    if required:
+        raise RuntimeError(
+            f"{name} is not set. Configure it in .env or your environment before running the app."
+        )
+    raise RuntimeError(f"{name} is not set.")
 
 
-PAPER_DIR = env_path("PAPER_DIR", DEFAULT_PAPER_DIR)
+PAPER_DIR = env_path("PAPER_DIR", required=True)
 INDEX_DIR = env_path("INDEX_DIR", DEFAULT_INDEX_DIR)
 MANIFEST_PATH = env_path("MANIFEST_PATH", DEFAULT_MANIFEST_PATH)
 
 
+def manifest_exists(manifest_path: Path = MANIFEST_PATH) -> bool:
+    return manifest_path.exists()
+
+
 def load_allowed_manifest_paths(manifest_path: Path = MANIFEST_PATH) -> set[str]:
+    if not manifest_exists(manifest_path):
+        return set()
     with open(manifest_path, newline="", encoding="utf-8-sig") as handle:
         return {
             row["file_location"].replace("/", "\\")
@@ -44,6 +58,7 @@ def load_allowed_manifest_paths(manifest_path: Path = MANIFEST_PATH) -> set[str]
 
 
 ALLOWED_PATHS = load_allowed_manifest_paths()
+USE_MANIFEST = bool(ALLOWED_PATHS)
 
 
 def normalize_file_location(file_location: str | Path, paper_dir: Path = PAPER_DIR) -> str:
@@ -55,6 +70,8 @@ def normalize_file_location(file_location: str | Path, paper_dir: Path = PAPER_D
 
 
 def only_manifest(path: str | Path) -> bool:
+    if not USE_MANIFEST:
+        return Path(path).suffix.lower() in PDF_EXTENSIONS
     rel = str(Path(path).relative_to(PAPER_DIR))
     return rel in ALLOWED_PATHS
 
@@ -72,7 +89,7 @@ def get_indexed_doc_count(index_dir: Path = INDEX_DIR) -> int:
             if status == FAILED_DOCUMENT_ADD_ID:
                 continue
             normalized = normalize_file_location(file_location)
-            if normalized in ALLOWED_PATHS:
+            if not USE_MANIFEST or normalized in ALLOWED_PATHS:
                 indexed.add(normalized)
     return len(indexed)
 
@@ -105,7 +122,7 @@ def build_settings() -> Settings:
             index=IndexSettings(
                 paper_directory=PAPER_DIR,
                 index_directory=INDEX_DIR,
-                manifest_file=MANIFEST_PATH,
+                manifest_file=MANIFEST_PATH if manifest_exists() else None,
                 use_absolute_paper_directory=False,
                 recurse_subdirectories=True,
                 concurrency=1,
