@@ -64,10 +64,12 @@ MANIFEST_PATH = env_path("MANIFEST_PATH", DEFAULT_MANIFEST_PATH)
 
 
 def manifest_exists(manifest_path: Path = MANIFEST_PATH) -> bool:
+    """Return whether a manifest file is present at the configured path."""
     return manifest_path.exists()
 
 
 def load_allowed_manifest_paths(manifest_path: Path = MANIFEST_PATH) -> set[str]:
+    """Load manifest-listed PDF paths in the project's normalized relative form."""
     if not manifest_exists(manifest_path):
         return set()
     with open(manifest_path, newline="", encoding="utf-8-sig") as handle:
@@ -83,14 +85,17 @@ USE_MANIFEST = bool(ALLOWED_PATHS)
 
 
 def get_allowed_paths(manifest_path: Path = MANIFEST_PATH) -> set[str]:
+    """Return the currently allowed relative PDF paths from the manifest, if any."""
     return load_allowed_manifest_paths(manifest_path)
 
 
 def use_manifest(manifest_path: Path = MANIFEST_PATH) -> bool:
+    """Return whether manifest scoping is active for the current configuration."""
     return bool(get_allowed_paths(manifest_path))
 
 
 def normalize_file_location(file_location: str | Path, paper_dir: Path = PAPER_DIR) -> str:
+    """Convert an indexed file path into the manifest-style relative Windows path."""
     value = str(file_location).replace("/", "\\")
     prefix = str(paper_dir).replace("/", "\\") + "\\"
     if value.startswith(prefix):
@@ -99,6 +104,7 @@ def normalize_file_location(file_location: str | Path, paper_dir: Path = PAPER_D
 
 
 def only_manifest(path: str | Path) -> bool:
+    """Allow only manifest-listed PDFs, or all PDFs when no manifest is configured."""
     current_allowed_paths = get_allowed_paths()
     if not current_allowed_paths:
         return Path(path).suffix.lower() in PDF_EXTENSIONS
@@ -107,6 +113,7 @@ def only_manifest(path: str | Path) -> bool:
 
 
 def get_indexed_doc_count(index_dir: Path = INDEX_DIR) -> int:
+    """Count indexed PDFs that are in scope for the current manifest settings."""
     if not index_dir.exists():
         return 0
     current_allowed_paths = get_allowed_paths()
@@ -127,6 +134,7 @@ def get_indexed_doc_count(index_dir: Path = INDEX_DIR) -> int:
 
 
 def get_failed_files(index_dir: Path = INDEX_DIR) -> list[str]:
+    """Return unique file paths that PaperQA recorded as failed during indexing."""
     failed = []
     if not index_dir.exists():
         return failed
@@ -142,6 +150,7 @@ def get_failed_files(index_dir: Path = INDEX_DIR) -> list[str]:
 
 
 def build_settings() -> Settings:
+    """Build the shared PaperQA settings object used across all entry points."""
     return Settings(
         llm=MODEL_NAME,
         summary_llm=MODEL_NAME,

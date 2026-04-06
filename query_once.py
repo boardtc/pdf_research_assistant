@@ -18,6 +18,7 @@ from bootstrap import build_settings
 
 
 def serialize_contexts(contexts):
+    """Convert PaperQA context objects into JSON-safe dictionaries for the UI."""
     items = []
     for ctx in list(contexts or []):
         text = getattr(ctx, "text", None)
@@ -32,6 +33,7 @@ def serialize_contexts(contexts):
 
 
 def run_query_payload(question: str) -> dict:
+    """Run one PaperQA query and return a serializable success or error payload."""
     try:
         settings = build_settings()
         response = run_or_ensure(
@@ -57,6 +59,7 @@ def run_query_payload(question: str) -> dict:
 
 
 def main() -> int:
+    """Execute the one-shot query CLI contract expected by the app and shell wrapper."""
     if len(sys.argv) != 2:
         print(json.dumps({"ok": False, "error": "Expected exactly one question argument."}))
         return 1

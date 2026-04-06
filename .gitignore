@@ -6,3 +6,6 @@ __pycache__/
 *.pyc
 *.html
 useful-commands.md
+tests/.tmp/
+.coverage
+.pytest_cache/
