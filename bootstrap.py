@@ -17,6 +17,9 @@ from paperqa.settings import AgentSettings, IndexSettings, ParsingSettings
 
 load_dotenv()
 
+# Avoid reusing opened Tantivy indexes across different asyncio event loops.
+os.environ.setdefault("PQA_INDEX_DONT_CACHE_INDEXES", "true")
+
 PROXY_ENV_VARS = ("HTTP_PROXY", "HTTPS_PROXY", "ALL_PROXY")
 LOOPBACK_PROXY_HOSTS = {"127.0.0.1", "localhost", "::1"}
 
@@ -79,6 +82,14 @@ ALLOWED_PATHS = load_allowed_manifest_paths()
 USE_MANIFEST = bool(ALLOWED_PATHS)
 
 
+def get_allowed_paths(manifest_path: Path = MANIFEST_PATH) -> set[str]:
+    return load_allowed_manifest_paths(manifest_path)
+
+
+def use_manifest(manifest_path: Path = MANIFEST_PATH) -> bool:
+    return bool(get_allowed_paths(manifest_path))
+
+
 def normalize_file_location(file_location: str | Path, paper_dir: Path = PAPER_DIR) -> str:
     value = str(file_location).replace("/", "\\")
     prefix = str(paper_dir).replace("/", "\\") + "\\"
@@ -88,15 +99,18 @@ def normalize_file_location(file_location: str | Path, paper_dir: Path = PAPER_D
 
 
 def only_manifest(path: str | Path) -> bool:
-    if not USE_MANIFEST:
+    current_allowed_paths = get_allowed_paths()
+    if not current_allowed_paths:
         return Path(path).suffix.lower() in PDF_EXTENSIONS
     rel = str(Path(path).relative_to(PAPER_DIR))
-    return rel in ALLOWED_PATHS
+    return rel in current_allowed_paths
 
 
 def get_indexed_doc_count(index_dir: Path = INDEX_DIR) -> int:
     if not index_dir.exists():
         return 0
+    current_allowed_paths = get_allowed_paths()
+    current_use_manifest = bool(current_allowed_paths)
     indexed = set()
     for file_index in index_dir.glob("*/files.zip"):
         try:
@@ -107,7 +121,7 @@ def get_indexed_doc_count(index_dir: Path = INDEX_DIR) -> int:
             if status == FAILED_DOCUMENT_ADD_ID:
                 continue
             normalized = normalize_file_location(file_location)
-            if not USE_MANIFEST or normalized in ALLOWED_PATHS:
+            if not current_use_manifest or normalized in current_allowed_paths:
                 indexed.add(normalized)
     return len(indexed)
 

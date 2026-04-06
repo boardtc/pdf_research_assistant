@@ -56,6 +56,8 @@ Each assistant response also includes:
 
 On first use, there is no search index yet. The first query will build it, and for a large PDF library this can take a significant amount of time.
 
+Each question is run in an isolated helper process so repeated questions in the same session do not reuse unstable async state.
+
 ### CLI
 
 ```bash
@@ -64,6 +66,8 @@ python query_papers.py
 ```
 
 Type a question at the prompt to search your indexed PDFs and return a cited answer with page references. Type `quit` to exit.
+
+Like the Streamlit app, the CLI runs each question in a fresh helper process to avoid cross-query async issues.
 
 ### Rebuild the Index
 
@@ -77,6 +81,8 @@ Use this when:
 - running the project for the first time and you want to build the index explicitly
 - you add new PDFs and want to rebuild before querying again
 - you want a terminal-only indexing run instead of letting the first query build the index
+
+On a clean rebuild, seeing `Manifest PDFs: <n>` and `Indexed before run: 0` is expected before indexing starts.
 
 See `useful-commands.example.md` for PowerShell commands that help check index build progress and troubleshoot rebuild issues. If you want a version with your own local paths ready to copy and paste, create `useful-commands.md` from it.
 
@@ -106,6 +112,8 @@ If `PDF_RESEARCH_ASSISTANT_SYNC_DIR` is set, the tracked `post-push` hook copies
 - If `manifest.csv` does not exist, the app indexes all PDFs under `PAPER_DIR`.
 - `useful-commands.example.md` is a public-safe template. If you want a version with your own local paths ready to copy and paste, create `useful-commands.md` from it.
 - The app automatically ignores the specific broken loopback proxy placeholder `127.0.0.1:9` if it appears in `HTTP_PROXY`, `HTTPS_PROXY`, or `ALL_PROXY`.
+- `query_once.py` is an internal helper used by the app and CLI; it is not intended as a separate user entry point.
+- If PaperQA reports that a PDF is empty but the file opens normally, it may be image-only and need OCR before it can be indexed.
 - Answers cite specific pages from your PDFs when available.
 
 ## Adding New PDFs
