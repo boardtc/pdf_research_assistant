@@ -8,8 +8,6 @@ A local PDF Research Assistant built with [PaperQA2](https://github.com/Future-H
 
 Core indexing and querying work on Windows, macOS, and Linux. The Streamlit `Copy answer` clipboard button is currently Windows-only.
 
-Automated tests also run in GitHub Actions on pushes and pull requests. See `TESTING.md` for local hook and CI details.
-
 ![PDF Research Assistant screenshot](images/streamlit_app.jpg)
 
 > **Important**
