@@ -28,6 +28,14 @@ python -m pytest tests\test_bootstrap.py
 python -m pytest tests\test_pdf_research_assistant.py
 ```
 
+```powershell
+python -m pytest tests\test_query_papers.py
+```
+
+```powershell
+python -m pytest tests\test_rebuild_index.py
+```
+
 ## Run one test with verbose output
 
 ```powershell
@@ -40,6 +48,14 @@ python -m pytest -v tests\test_bootstrap.py
 
 ```powershell
 python -m pytest -v tests\test_pdf_research_assistant.py
+```
+
+```powershell
+python -m pytest -v tests\test_query_papers.py
+```
+
+```powershell
+python -m pytest -v tests\test_rebuild_index.py
 ```
 
 ## Run coverage for one file
@@ -56,6 +72,14 @@ python -m pytest tests\test_bootstrap.py --cov=bootstrap --cov-report=term-missi
 python -m pytest tests\test_pdf_research_assistant.py --cov=pdf_research_assistant --cov-report=term-missing
 ```
 
+```powershell
+python -m pytest tests\test_query_papers.py --cov=query_papers --cov-report=term-missing
+```
+
+```powershell
+python -m pytest tests\test_rebuild_index.py --cov=rebuild_index --cov-report=term-missing
+```
+
 ## Run coverage for the whole project
 
 ```powershell
@@ -67,7 +91,7 @@ python -m pytest --cov=. --cov-report=term-missing
 - Unit tests use `pytest` as the test runner.
 - Coverage reporting uses `pytest-cov`.
 - Mocking uses Python's built-in `unittest.mock`.
-- Current unit test files are `tests/test_query_once.py`, `tests/test_bootstrap.py`, and `tests/test_pdf_research_assistant.py`.
+- Current unit test files are `tests/test_query_once.py`, `tests/test_bootstrap.py`, `tests/test_pdf_research_assistant.py`, `tests/test_query_papers.py`, and `tests/test_rebuild_index.py`.
 - `query_once.py` and `bootstrap.py` have straightforward function-oriented tests.
 - `pdf_research_assistant.py` includes heavier mocking because the Streamlit page executes UI logic at import time.
 

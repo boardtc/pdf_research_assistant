@@ -7,6 +7,7 @@ settings = build_settings()
 
 
 async def main():
+    """Rebuild the PaperQA directory index and print a short before/after status summary."""
     if USE_MANIFEST:
         print(f"Manifest PDFs: {len(ALLOWED_PATHS)}")
     else:
