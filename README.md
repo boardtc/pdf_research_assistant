@@ -72,7 +72,7 @@ python query_papers.py
 
 Type a question at the prompt to search your indexed PDFs and return a cited answer with page references. Type `quit` to exit.
 
-Like the Streamlit app, the CLI runs each question in a fresh helper process to avoid cross-query async issues.
+Both the Streamlit app and the CLI run each question in a fresh helper process to avoid reusing async/query state between questions.
 
 ### Rebuild the Index
 
