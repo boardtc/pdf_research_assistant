@@ -84,6 +84,45 @@ def bootstrap_module(workspace_tmp_path):
             sys.modules.pop("bootstrap", None)
 
 
+def test_import_with_existing_manifest_populates_allowed_paths(workspace_tmp_path):
+    paperqa_module = ModuleType("paperqa")
+    paperqa_settings_module = ModuleType("paperqa.settings")
+    dotenv_module = ModuleType("dotenv")
+
+    paperqa_module.Settings = _CaptureSettings
+    paperqa_settings_module.AgentSettings = _CaptureConfig
+    paperqa_settings_module.IndexSettings = _CaptureConfig
+    paperqa_settings_module.ParsingSettings = _CaptureConfig
+    dotenv_module.load_dotenv = mock.Mock(name="load_dotenv")
+
+    paper_dir = workspace_tmp_path / "papers"
+    paper_dir.mkdir()
+    manifest_path = workspace_tmp_path / "manifest.csv"
+    manifest_path.write_text("file_location\nfolder/paper.pdf\n", encoding="utf-8")
+
+    env = {
+        "PAPER_DIR": str(paper_dir),
+        "INDEX_DIR": str(workspace_tmp_path / "index"),
+        "MANIFEST_PATH": str(manifest_path),
+    }
+
+    with mock.patch.dict(os.environ, env, clear=False):
+        with mock.patch.dict(
+            sys.modules,
+            {
+                "paperqa": paperqa_module,
+                "paperqa.settings": paperqa_settings_module,
+                "dotenv": dotenv_module,
+            },
+        ):
+            sys.modules.pop("bootstrap", None)
+            module = importlib.import_module("bootstrap")
+            try:
+                assert module.ALLOWED_PATHS == {"folder/paper.pdf"}
+            finally:
+                sys.modules.pop("bootstrap", None)
+
+
 def test_sanitize_proxy_environment_leaves_environment_unchanged_when_no_proxy_variables_are_set(bootstrap_module):
     with mock.patch.dict(os.environ, {}, clear=True):
         bootstrap_module.sanitize_proxy_environment()

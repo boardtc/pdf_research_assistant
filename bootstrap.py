@@ -69,6 +69,12 @@ def manifest_exists(manifest_path: Path = MANIFEST_PATH) -> bool:
     return manifest_path.exists()
 
 
+def normalize_relative_pdf_path(file_location: str | Path) -> str:
+    """Normalize a relative PDF path to a forward-slash form for stable comparisons."""
+    value = str(file_location).replace("\\", "/").strip()
+    return str(PurePosixPath(value))
+
+
 def load_allowed_manifest_paths(manifest_path: Path = MANIFEST_PATH) -> set[str]:
     """Load manifest-listed PDF paths in a normalized relative form."""
     if not manifest_exists(manifest_path):
@@ -93,12 +99,6 @@ def get_allowed_paths(manifest_path: Path = MANIFEST_PATH) -> set[str]:
 def use_manifest(manifest_path: Path = MANIFEST_PATH) -> bool:
     """Return whether manifest scoping is active for the current configuration."""
     return bool(get_allowed_paths(manifest_path))
-
-
-def normalize_relative_pdf_path(file_location: str | Path) -> str:
-    """Normalize a relative PDF path to a forward-slash form for stable comparisons."""
-    value = str(file_location).replace("\\", "/").strip()
-    return str(PurePosixPath(value))
 
 
 def normalize_file_location(file_location: str | Path, paper_dir: Path = PAPER_DIR) -> str:
