@@ -6,6 +6,8 @@
 
 A local PDF Research Assistant built with [PaperQA2](https://github.com/Future-House/paper-qa), backed by either a manifest-controlled document library or all PDFs under a chosen root folder.
 
+![PDF Research Assistant screenshot](images/streamlit_app.jpg)
+
 > **Important**
 > PaperQA2 uses retrieval-augmented generation (RAG). It returns real sources and real page references while still sometimes overstating, paraphrasing, or extrapolating beyond what the source explicitly says. Treat answers as a starting point for exploration, not as a citable summary. Always verify important claims against the source passages and the original PDF.
 
