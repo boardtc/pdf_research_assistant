@@ -32,6 +32,24 @@ Important:
 - That means forks and fresh clones do not automatically enable the hook unless the contributor runs `git config core.hooksPath .githooks`.
 - To enforce tests for everyone regardless of local hook setup, use CI as well.
 
+## GitHub Actions CI
+
+This repository also runs the test suite in GitHub Actions on every push and pull request.
+
+The workflow lives at `.github/workflows/tests.yml` and currently runs:
+
+```powershell
+python -m pytest
+```
+
+on a `windows-latest` runner.
+
+This CI workflow complements the local `pre-push` hook:
+
+- the local hook gives fast feedback before a push leaves your machine
+- GitHub Actions provides a consistent remote check for pushes and pull requests
+- branch protection can require the `test` status check before changes are merged into `master`
+
 ## Run all tests
 
 ```powershell
