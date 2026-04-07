@@ -48,7 +48,8 @@ This CI workflow complements the local `pre-push` hook:
 
 - the local hook gives fast feedback before a push leaves your machine
 - GitHub Actions provides a consistent remote check for pushes and pull requests
-- branch protection can require the `test` status check before changes are merged into `master`
+- this repository uses the local `pre-push` hook as the primary before-push safeguard
+- branch protection can require the `test` status check if you choose a PR-based workflow later
 
 ## Run all tests
 
