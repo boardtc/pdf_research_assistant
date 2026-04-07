@@ -8,6 +8,30 @@ This project keeps test tooling separate from runtime dependencies so standard u
 python -m pip install -r requirements-dev.txt
 ```
 
+## Enable the pre-push test hook
+
+This repository includes a versioned Git `pre-push` hook in `.githooks/pre-push` that runs the full test suite before each push.
+
+Run this once in your local clone to tell Git to use the tracked hooks directory:
+
+```powershell
+git config core.hooksPath .githooks
+```
+
+After that, every `git push` from that clone will run:
+
+```powershell
+python -m pytest
+```
+
+If the tests fail, Git blocks the push.
+
+Important:
+
+- The hook file is tracked in the repository, but `core.hooksPath` is a local Git setting stored in `.git/config`.
+- That means forks and fresh clones do not automatically enable the hook unless the contributor runs `git config core.hooksPath .githooks`.
+- To enforce tests for everyone regardless of local hook setup, use CI as well.
+
 ## Run all tests
 
 ```powershell

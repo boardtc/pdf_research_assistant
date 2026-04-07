@@ -121,10 +121,18 @@ def test_sanitize_proxy_environment_removes_all_proxy_when_it_points_at_loopback
 
 
 def test_env_path_returns_expanded_env_value_when_variable_is_set(bootstrap_module):
-    with mock.patch.dict(os.environ, {"TEST_PATH_VAR": "~/docs", "USERPROFILE": r"C:\Users\TestUser"}, clear=True):
+    env = {"TEST_PATH_VAR": "~/docs"}
+    expected = Path("/tmp/test-user/docs")
+    if sys.platform == "win32":
+        env["USERPROFILE"] = r"C:\Users\TestUser"
+        expected = Path(r"C:\Users\TestUser\docs")
+    else:
+        env["HOME"] = "/tmp/test-user"
+
+    with mock.patch.dict(os.environ, env, clear=True):
         result = bootstrap_module.env_path("TEST_PATH_VAR")
 
-    assert result == Path(r"C:\Users\TestUser\docs")
+    assert result == expected
 
 
 def test_env_path_returns_default_when_variable_is_missing_and_default_is_provided(bootstrap_module, workspace_tmp_path):
@@ -170,11 +178,11 @@ def test_load_allowed_manifest_paths_loads_a_single_manifest_path_in_normalized_
     assert bootstrap_module.load_allowed_manifest_paths(manifest_path) == {"paper.pdf"}
 
 
-def test_load_allowed_manifest_paths_normalizes_forward_slashes_to_backslashes(bootstrap_module, workspace_tmp_path):
+def test_load_allowed_manifest_paths_normalizes_slashes_to_a_stable_relative_form(bootstrap_module, workspace_tmp_path):
     manifest_path = workspace_tmp_path / "manifest.csv"
     manifest_path.write_text("file_location\nfolder/paper.pdf\n", encoding="utf-8")
 
-    assert bootstrap_module.load_allowed_manifest_paths(manifest_path) == {"folder\\paper.pdf"}
+    assert bootstrap_module.load_allowed_manifest_paths(manifest_path) == {"folder/paper.pdf"}
 
 
 def test_load_allowed_manifest_paths_skips_rows_without_file_location_values(bootstrap_module, workspace_tmp_path):
@@ -188,7 +196,13 @@ def test_get_allowed_paths_returns_manifest_paths_for_current_configuration(boot
     manifest_path = workspace_tmp_path / "manifest.csv"
     manifest_path.write_text("file_location\nfolder/paper.pdf\n", encoding="utf-8")
 
-    assert bootstrap_module.get_allowed_paths(manifest_path) == {"folder\\paper.pdf"}
+    assert bootstrap_module.get_allowed_paths(manifest_path) == {"folder/paper.pdf"}
+
+
+def test_normalize_relative_pdf_path_converts_backslashes_to_forward_slashes(bootstrap_module):
+    result = bootstrap_module.normalize_relative_pdf_path(r"folder\paper.pdf")
+
+    assert result == "folder/paper.pdf"
 
 
 def test_use_manifest_returns_true_when_manifest_contains_at_least_one_allowed_path(bootstrap_module, workspace_tmp_path):
@@ -203,39 +217,39 @@ def test_normalize_file_location_strips_paper_dir_prefix_from_absolute_path(boot
 
     result = bootstrap_module.normalize_file_location(Path(r"C:\papers\folder\paper.pdf"), paper_dir=paper_dir)
 
-    assert result == r"folder\paper.pdf"
+    assert result == "folder/paper.pdf"
 
 
 def test_normalize_file_location_preserves_relative_path_when_paper_dir_prefix_is_not_present(bootstrap_module):
     result = bootstrap_module.normalize_file_location("folder/paper.pdf", paper_dir=Path(r"C:\papers"))
 
-    assert result == r"folder\paper.pdf"
+    assert result == "folder/paper.pdf"
 
 
 def test_only_manifest_allows_pdf_when_manifest_is_not_configured(bootstrap_module):
     # Mock manifest lookup so this test exercises the "all PDFs allowed" branch directly.
     with mock.patch.object(bootstrap_module, "get_allowed_paths", return_value=set()):
-        assert bootstrap_module.only_manifest("folder\\paper.pdf") is True
+        assert bootstrap_module.only_manifest("folder/paper.pdf") is True
 
 
 def test_only_manifest_rejects_non_pdf_when_manifest_is_not_configured(bootstrap_module):
     # Mock manifest lookup so this test exercises the extension filter branch directly.
     with mock.patch.object(bootstrap_module, "get_allowed_paths", return_value=set()):
-        assert bootstrap_module.only_manifest("folder\\paper.txt") is False
+        assert bootstrap_module.only_manifest("folder/paper.txt") is False
 
 
 def test_only_manifest_allows_path_present_in_manifest_when_manifest_scope_is_enabled(bootstrap_module):
     # Mock manifest lookup so this test exercises the relative-path membership branch directly.
-    with mock.patch.object(bootstrap_module, "get_allowed_paths", return_value={"folder\\paper.pdf"}):
-        # Mock the configured paper root so relative_to() can derive the manifest-style path.
+    with mock.patch.object(bootstrap_module, "get_allowed_paths", return_value={"folder/paper.pdf"}):
+        # Mock the configured paper root so normalization strips the shared prefix before matching.
         with mock.patch.object(bootstrap_module, "PAPER_DIR", Path(r"C:\papers")):
             assert bootstrap_module.only_manifest(Path(r"C:\papers\folder\paper.pdf")) is True
 
 
 def test_only_manifest_rejects_path_absent_from_manifest_when_manifest_scope_is_enabled(bootstrap_module):
     # Mock manifest lookup so this test exercises the negative membership branch directly.
-    with mock.patch.object(bootstrap_module, "get_allowed_paths", return_value={"folder\\paper.pdf"}):
-        # Mock the configured paper root so relative_to() can derive the manifest-style path.
+    with mock.patch.object(bootstrap_module, "get_allowed_paths", return_value={"folder/paper.pdf"}):
+        # Mock the configured paper root so normalization strips the shared prefix before matching.
         with mock.patch.object(bootstrap_module, "PAPER_DIR", Path(r"C:\papers")):
             assert bootstrap_module.only_manifest(Path(r"C:\papers\folder\other.pdf")) is False
 
@@ -317,7 +331,7 @@ def test_get_indexed_doc_count_normalizes_absolute_indexed_paths_before_manifest
     # Mock the configured paper root so normalization strips the shared prefix before matching.
     with mock.patch.object(bootstrap_module, "PAPER_DIR", paper_dir):
         # Mock manifest lookup so the test can assert on normalized matching only.
-        with mock.patch.object(bootstrap_module, "get_allowed_paths", return_value={"folder\\paper.pdf"}):
+        with mock.patch.object(bootstrap_module, "get_allowed_paths", return_value={"folder/paper.pdf"}):
             assert bootstrap_module.get_indexed_doc_count(index_dir) == 1
 
 

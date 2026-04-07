@@ -136,7 +136,10 @@ def test_flatten_exception_messages_indents_nested_exception_messages_by_depth(p
     assert "    RuntimeError: grandchild" in result
 
 
-def test_copy_to_clipboard_invokes_powershell_clipboard_command_with_utf8_text_input(pdf_research_assistant_module):
+@pytest.mark.skipif(sys.platform != "win32", reason="Windows-only clipboard behavior")
+def test_windows_only_copy_to_clipboard_invokes_powershell_clipboard_command_with_utf8_text_input(
+    pdf_research_assistant_module,
+):
     # Mock subprocess.run so the test can assert on the clipboard command without touching the real clipboard.
     with mock.patch.object(pdf_research_assistant_module.subprocess, "run") as run_mock:
         pdf_research_assistant_module.copy_to_clipboard("Copied text")

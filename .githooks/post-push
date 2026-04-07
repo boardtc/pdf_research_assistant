@@ -22,6 +22,6 @@ for file in .env manifest.csv; do
   fi
 done
 
-if [ -f "useful-commands.md" ]; then
-  cp "useful-commands.md" "$DEST_DIR/"
+if [ -f "windows-helper-commands.md" ]; then
+  cp "windows-helper-commands.md" "$DEST_DIR/"
 fi

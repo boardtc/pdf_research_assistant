@@ -1,6 +1,6 @@
-# Useful Commands
+# Windows Helper Commands
 
-These are example commands that proved useful while running, checking, and troubleshooting the local PDF index.
+These are example PowerShell commands that proved useful while running, checking, and troubleshooting the local PDF index on Windows.
 
 Replace placeholder paths like `<repo-root>` and `<your-pdf-root>` with your own local paths.
 
@@ -18,7 +18,7 @@ index_root = repo / 'index'
 with open(manifest_path, newline='', encoding='utf-8') as f:
     rows = list(csv.DictReader(f))
 
-manifest_set = {row['file_location'].replace('/', '\\') for row in rows if row.get('file_location')}
+manifest_set = {str(Path(row['file_location']).as_posix()) for row in rows if row.get('file_location')}
 
 indexed = set()
 for p in index_root.glob('*/files.zip'):
@@ -26,7 +26,7 @@ for p in index_root.glob('*/files.zip'):
     for file_location, status in data.items():
         if status == 'ERROR':
             continue
-        normalized = str(file_location).replace('/', '\\')
+        normalized = str(Path(file_location).as_posix())
         if normalized in manifest_set:
             indexed.add(normalized)
 
@@ -59,10 +59,7 @@ index_root = Path(r'<repo-root>\index')
 with open(manifest, newline='', encoding='utf-8-sig') as f:
     manifest_rows = list(csv.DictReader(f))
 
-manifest_files = {
-    str(Path(row['file_location']).as_posix()).replace('/', '\\')
-    for row in manifest_rows
-}
+manifest_files = {str(Path(row['file_location']).as_posix()) for row in manifest_rows}
 
 indexed = {}
 for p in index_root.glob('*/files.zip'):
@@ -70,7 +67,7 @@ for p in index_root.glob('*/files.zip'):
 
 missing = sorted(
     f for f in manifest_files
-    if f not in {str(Path(k).as_posix()).replace('/', '\\') for k in indexed}
+    if f not in {str(Path(k).as_posix()) for k in indexed}
 )
 print('Missing:', len(missing))
 for m in missing:

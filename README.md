@@ -6,6 +6,8 @@
 
 A local PDF Research Assistant built with [PaperQA2](https://github.com/Future-House/paper-qa), using either a manifest-controlled document library or all PDFs under a chosen root folder.
 
+Core indexing and querying work on Windows, macOS, and Linux. The Streamlit `Copy answer` clipboard button is currently Windows-only.
+
 ![PDF Research Assistant screenshot](images/streamlit_app.jpg)
 
 > **Important**
@@ -59,6 +61,8 @@ Each assistant response also includes:
 - a `Copy answer` button that copies the full answer text to the clipboard on Windows
 - a `Show source passages` expander with the retrieved evidence passages used for the answer
 
+Clipboard support for the `Copy answer` button is currently implemented for Windows only.
+
 On first use, there is no search index yet. The first query builds it, and for a large PDF library this can take a while.
 
 Each question runs in a fresh helper process so repeated questions in the same session start with clean query state.
@@ -89,13 +93,13 @@ Use this when:
 
 On a clean rebuild, it is normal to see `Manifest PDFs: <n>` and `Indexed before run: 0` before indexing starts.
 
-See `useful-commands.example.md` for PowerShell commands that help check index build progress and troubleshoot rebuild issues. If you want a version with your own local paths ready to copy and paste, create `useful-commands.md` from it.
+See `windows-helper-commands.example.md` for optional PowerShell commands that help check index build progress and troubleshoot rebuild issues on Windows. If you want a version with your own local paths ready to copy and paste, create `windows-helper-commands.md` from it.
 
 ## Configuration
 
 The app and CLI read configuration from environment variables and also load values from `.env` when present.
 
-By default, `INDEX_DIR` and `MANIFEST_PATH` are resolved relative to the repository root, so the project can be moved without changing code. `PAPER_DIR` can point to any folder on your system. If `manifest.csv` is present, it stores paths relative to that one common PDF root. If `manifest.csv` is absent, the app will index all PDFs under `PAPER_DIR`.
+By default, `INDEX_DIR` and `MANIFEST_PATH` are resolved relative to the repository root, so the project can be moved without changing code. `PAPER_DIR` can point to any folder on your system using normal paths for your OS. If `manifest.csv` is present, it stores paths relative to that one common PDF root. If `manifest.csv` is absent, the app will index all PDFs under `PAPER_DIR`.
 
 | Variable | Purpose | Default |
 | --- | --- | --- |
@@ -103,18 +107,18 @@ By default, `INDEX_DIR` and `MANIFEST_PATH` are resolved relative to the reposit
 | `PAPER_DIR` | Common root folder containing your PDFs | required |
 | `INDEX_DIR` | Optional override for where the local PaperQA index is stored | `<repo-root>/index` |
 | `MANIFEST_PATH` | Optional CSV manifest of allowed PDFs | `<repo-root>/manifest.csv` |
-| `PDF_RESEARCH_ASSISTANT_SYNC_DIR` | Optional destination folder for post-push copies of `.env`, `manifest.csv`, and your private `useful-commands.md` notes | unset |
+| `PDF_RESEARCH_ASSISTANT_SYNC_DIR` | Optional destination folder for post-push copies of `.env`, `manifest.csv`, and your private `windows-helper-commands.md` notes | unset |
 
 See `.env.example` for the expected keys. Leave `INDEX_DIR` and `MANIFEST_PATH` unset if you want to use the repo-root defaults.
 
-If `PDF_RESEARCH_ASSISTANT_SYNC_DIR` is set, the tracked `post-push` hook copies `.env` and `manifest.csv` when present. It also copies `useful-commands.md` if you have created a private local version for yourself.
+If `PDF_RESEARCH_ASSISTANT_SYNC_DIR` is set, the tracked `post-push` hook copies `.env` and `manifest.csv` when present. It also copies `windows-helper-commands.md` if you have created a private local version for yourself.
 
 ## Notes
 
 - The search index is stored in the folder set by `INDEX_DIR`.
 - If `manifest.csv` exists, the app uses it to decide which PDFs are in scope and which metadata to use.
 - If `manifest.csv` does not exist, the app indexes all PDFs under `PAPER_DIR`.
-- `useful-commands.example.md` is a safe-to-share template. If you want a version with your own local paths ready to copy and paste, create `useful-commands.md` from it.
+- `windows-helper-commands.example.md` is a safe-to-share template. If you want a version with your own local paths ready to copy and paste, create `windows-helper-commands.md` from it.
 - The app automatically ignores the broken loopback proxy placeholder `127.0.0.1:9` if it appears in `HTTP_PROXY`, `HTTPS_PROXY`, or `ALL_PROXY`.
 - `query_once.py` is an internal helper used by the app and CLI; it is not intended as a separate user entry point.
 - If PaperQA reports that a PDF is empty but the file opens normally, it may be image-only and need OCR before it can be indexed.

@@ -1,0 +1,15 @@
+#!/bin/sh
+
+set -eu
+
+echo "Running test suite before push..."
+
+if ! python -m pytest; then
+  status=$?
+  echo
+  echo "Push blocked because the test suite failed."
+  echo "Install test dependencies with: python -m pip install -r requirements-dev.txt"
+  exit "$status"
+fi
+
+echo "Tests passed. Continuing push."

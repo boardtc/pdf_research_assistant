@@ -9,6 +9,7 @@ import os
 import pickle
 import zlib
 from pathlib import Path
+from pathlib import PurePosixPath
 from urllib.parse import urlparse
 
 from dotenv import load_dotenv
@@ -69,12 +70,12 @@ def manifest_exists(manifest_path: Path = MANIFEST_PATH) -> bool:
 
 
 def load_allowed_manifest_paths(manifest_path: Path = MANIFEST_PATH) -> set[str]:
-    """Load manifest-listed PDF paths in the project's normalized relative form."""
+    """Load manifest-listed PDF paths in a normalized relative form."""
     if not manifest_exists(manifest_path):
         return set()
     with open(manifest_path, newline="", encoding="utf-8-sig") as handle:
         return {
-            row["file_location"].replace("/", "\\")
+            normalize_relative_pdf_path(row["file_location"])
             for row in csv.DictReader(handle)
             if row.get("file_location")
         }
@@ -94,12 +95,18 @@ def use_manifest(manifest_path: Path = MANIFEST_PATH) -> bool:
     return bool(get_allowed_paths(manifest_path))
 
 
+def normalize_relative_pdf_path(file_location: str | Path) -> str:
+    """Normalize a relative PDF path to a forward-slash form for stable comparisons."""
+    value = str(file_location).replace("\\", "/").strip()
+    return str(PurePosixPath(value))
+
+
 def normalize_file_location(file_location: str | Path, paper_dir: Path = PAPER_DIR) -> str:
-    """Convert an indexed file path into the manifest-style relative Windows path."""
-    value = str(file_location).replace("/", "\\")
-    prefix = str(paper_dir).replace("/", "\\") + "\\"
-    if value.startswith(prefix):
-        value = value[len(prefix) :]
+    """Convert an indexed file path into the manifest-style relative path form."""
+    value = normalize_relative_pdf_path(file_location)
+    prefix = normalize_relative_pdf_path(paper_dir).rstrip("/")
+    if prefix and value.startswith(prefix + "/"):
+        return value[len(prefix) + 1 :]
     return value
 
 
@@ -108,8 +115,7 @@ def only_manifest(path: str | Path) -> bool:
     current_allowed_paths = get_allowed_paths()
     if not current_allowed_paths:
         return Path(path).suffix.lower() in PDF_EXTENSIONS
-    rel = str(Path(path).relative_to(PAPER_DIR))
-    return rel in current_allowed_paths
+    return normalize_file_location(path, paper_dir=PAPER_DIR) in current_allowed_paths
 
 
 def get_indexed_doc_count(index_dir: Path = INDEX_DIR) -> int:
