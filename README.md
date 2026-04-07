@@ -21,7 +21,7 @@ A local PDF Research Assistant built with [PaperQA2](https://github.com/Future-H
 Install the Python dependencies:
 
 ```bash
-cd ~/gitrepos/pdf_research_assistant
+cd ~/gitrepos/pdf-research-assistant
 pip install -r requirements.txt
 ```
 
@@ -42,7 +42,7 @@ Create an OpenAI API key in the OpenAI dashboard:
 ### Streamlit UI
 
 ```bash
-cd ~/gitrepos/pdf_research_assistant
+cd ~/gitrepos/pdf-research-assistant
 streamlit run pdf_research_assistant.py
 ```
 
@@ -66,7 +66,7 @@ Each question is run in an isolated helper process so repeated questions in the 
 ### CLI
 
 ```bash
-cd ~/gitrepos/pdf_research_assistant
+cd ~/gitrepos/pdf-research-assistant
 python query_papers.py
 ```
 
@@ -77,7 +77,7 @@ Like the Streamlit app, the CLI runs each question in a fresh helper process to 
 ### Rebuild the Index
 
 ```bash
-cd ~/gitrepos/pdf_research_assistant
+cd ~/gitrepos/pdf-research-assistant
 python rebuild_index.py
 ```
 
