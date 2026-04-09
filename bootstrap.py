@@ -15,6 +15,7 @@ from urllib.parse import urlparse
 from dotenv import load_dotenv
 from paperqa import Settings
 from paperqa.settings import AgentSettings, IndexSettings, ParsingSettings
+from pdf_parser import parse_pdf_with_fallback
 
 load_dotenv()
 
@@ -118,6 +119,14 @@ def only_manifest(path: str | Path) -> bool:
     return normalize_file_location(path, paper_dir=PAPER_DIR) in current_allowed_paths
 
 
+def iter_index_file_archives(index_dir: Path) -> list[Path]:
+    """Return the relevant index archive files for either a shard dir or an index root dir."""
+    direct_archive = index_dir / "files.zip"
+    if direct_archive.exists():
+        return [direct_archive]
+    return list(index_dir.glob("*/files.zip"))
+
+
 def get_indexed_doc_count(index_dir: Path = INDEX_DIR) -> int:
     """Count indexed PDFs that are in scope for the current manifest settings."""
     if not index_dir.exists():
@@ -125,7 +134,7 @@ def get_indexed_doc_count(index_dir: Path = INDEX_DIR) -> int:
     current_allowed_paths = get_allowed_paths()
     current_use_manifest = bool(current_allowed_paths)
     indexed = set()
-    for file_index in index_dir.glob("*/files.zip"):
+    for file_index in iter_index_file_archives(index_dir):
         try:
             data = pickle.loads(zlib.decompress(file_index.read_bytes()))
         except Exception:
@@ -144,7 +153,7 @@ def get_failed_files(index_dir: Path = INDEX_DIR) -> list[str]:
     failed = []
     if not index_dir.exists():
         return failed
-    for file_index in index_dir.glob("*/files.zip"):
+    for file_index in iter_index_file_archives(index_dir):
         try:
             data = pickle.loads(zlib.decompress(file_index.read_bytes()))
         except Exception:
@@ -162,7 +171,7 @@ def build_settings() -> Settings:
         summary_llm=MODEL_NAME,
         llm_config={"rate_limit": {MODEL_NAME: "30000 per 1 minute"}},
         summary_llm_config={"rate_limit": {MODEL_NAME: "30000 per 1 minute"}},
-        parsing=ParsingSettings(multimodal=False, use_doc_details=False),
+        parsing=ParsingSettings(multimodal=False, use_doc_details=False, parse_pdf=parse_pdf_with_fallback),
         agent=AgentSettings(
             agent_llm=MODEL_NAME,
             agent_llm_config={"rate_limit": {MODEL_NAME: "30000 per 1 minute"}},

@@ -1,6 +1,10 @@
 import asyncio
 import importlib
+import shutil
+import pickle
 import sys
+import uuid
+import zlib
 from pathlib import Path
 from types import ModuleType
 from unittest import mock
@@ -13,14 +17,33 @@ if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
 
+def _write_files_zip(index_dir: Path, payload: dict) -> None:
+    index_dir.mkdir(parents=True, exist_ok=True)
+    (index_dir / "files.zip").write_bytes(zlib.compress(pickle.dumps(payload)))
+
+
+@pytest.fixture
+def workspace_tmp_path():
+    root = PROJECT_ROOT / "tests" / ".tmp"
+    root.mkdir(parents=True, exist_ok=True)
+    path = root / str(uuid.uuid4())
+    path.mkdir()
+    yield path
+    shutil.rmtree(path, ignore_errors=True)
+
+
 @pytest.fixture
 def rebuild_index_module():
     bootstrap_module = ModuleType("bootstrap")
     search_module = ModuleType("paperqa.agents.search")
+    settings_object = mock.Mock()
+    settings_object.agent.index.index_directory = Path("index-root")
+    settings_object.get_index_name.return_value = "active-index"
 
     bootstrap_module.ALLOWED_PATHS = {"paper_a.pdf", "paper_b.pdf"}
+    bootstrap_module.FAILED_DOCUMENT_ADD_ID = "ERROR"
     bootstrap_module.USE_MANIFEST = True
-    bootstrap_module.build_settings = mock.Mock(return_value="settings-object")
+    bootstrap_module.build_settings = mock.Mock(return_value=settings_object)
     bootstrap_module.get_failed_files = mock.Mock(return_value=[])
     bootstrap_module.get_indexed_doc_count = mock.Mock(side_effect=[1, 2])
 
@@ -98,6 +121,38 @@ def test_main_prints_each_failed_file_after_rebuild(rebuild_index_module):
     ]
 
 
+def test_main_retries_previously_failed_documents_from_the_active_index_before_rebuild(rebuild_index_module):
+    active_index_dir = Path("index-root") / "active-index"
+    rebuild_index_module.settings = mock.Mock()
+    rebuild_index_module.settings.agent.index.index_directory = Path("index-root")
+    rebuild_index_module.settings.get_index_name.return_value = "active-index"
+    rebuild_index_module.USE_MANIFEST = True
+    rebuild_index_module.ALLOWED_PATHS = {"paper_a.pdf"}
+    rebuild_index_module.get_indexed_doc_count = mock.Mock(side_effect=[5, 6])
+    rebuild_index_module.get_failed_files = mock.Mock(return_value=[])
+
+    with mock.patch.object(
+        rebuild_index_module,
+        "clear_failed_documents_from_active_index",
+        return_value=1,
+    ) as clear_failed_mock:
+        with mock.patch("builtins.print") as print_mock:
+            asyncio.run(rebuild_index_module.main())
+
+    clear_failed_mock.assert_called_once_with(active_index_dir)
+    rebuild_index_module.get_indexed_doc_count.assert_has_calls(
+        [mock.call(index_dir=active_index_dir), mock.call(index_dir=active_index_dir)]
+    )
+    rebuild_index_module.get_failed_files.assert_called_once_with(index_dir=active_index_dir)
+    assert print_mock.call_args_list == [
+        mock.call("Manifest PDFs: 1"),
+        mock.call("Indexed before run: 5"),
+        mock.call("Retrying 1 previously failed PDFs in the active index."),
+        mock.call("Indexed after run: 6"),
+        mock.call("Failed PDFs: 0"),
+    ]
+
+
 def test_main_continues_when_directory_rebuild_raises_exception_group_and_reports_recorded_failed_files(
     rebuild_index_module,
 ):
@@ -172,3 +227,46 @@ def test_summarize_exception_messages_flattens_nested_exception_groups_in_order(
         "unknown encoding: /SymbolSetEncoding",
         "bad metadata",
     ]
+
+
+def test_get_active_index_dir_returns_current_settings_index_directory(rebuild_index_module):
+    rebuild_index_module.settings = mock.Mock()
+    rebuild_index_module.settings.agent.index.index_directory = Path("index-root")
+    rebuild_index_module.settings.get_index_name.return_value = "active-index"
+
+    assert rebuild_index_module.get_active_index_dir() == Path("index-root") / "active-index"
+
+
+def test_clear_failed_documents_from_active_index_returns_zero_when_files_zip_is_missing(
+    rebuild_index_module, workspace_tmp_path
+):
+    assert rebuild_index_module.clear_failed_documents_from_active_index(workspace_tmp_path / "missing") == 0
+
+
+def test_clear_failed_documents_from_active_index_returns_zero_when_files_zip_is_unreadable(
+    rebuild_index_module, workspace_tmp_path
+):
+    index_dir = workspace_tmp_path / "index"
+    index_dir.mkdir(parents=True, exist_ok=True)
+    (index_dir / "files.zip").write_bytes(b"not-a-valid-archive")
+
+    assert rebuild_index_module.clear_failed_documents_from_active_index(index_dir) == 0
+
+
+def test_clear_failed_documents_from_active_index_removes_only_failed_entries_and_rewrites_files_zip(
+    rebuild_index_module, workspace_tmp_path
+):
+    index_dir = workspace_tmp_path / "index"
+    _write_files_zip(
+        index_dir,
+        {
+            "failed.pdf": rebuild_index_module.FAILED_DOCUMENT_ADD_ID,
+            "kept.pdf": "abc123",
+        },
+    )
+
+    removed_count = rebuild_index_module.clear_failed_documents_from_active_index(index_dir)
+    rewritten_payload = pickle.loads(zlib.decompress((index_dir / "files.zip").read_bytes()))
+
+    assert removed_count == 1
+    assert rewritten_payload == {"kept.pdf": "abc123"}

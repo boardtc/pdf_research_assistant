@@ -392,6 +392,16 @@ def test_get_indexed_doc_count_returns_zero_when_every_indexed_entry_is_failed_o
         assert bootstrap_module.get_indexed_doc_count(index_dir) == 0
 
 
+def test_get_indexed_doc_count_reads_direct_files_zip_when_index_dir_is_a_single_active_shard(
+    bootstrap_module, workspace_tmp_path
+):
+    index_dir = workspace_tmp_path / "index" / "active"
+    _write_files_zip(index_dir, "", {"paper.pdf": "OK"})
+
+    with mock.patch.object(bootstrap_module, "get_allowed_paths", return_value=set()):
+        assert bootstrap_module.get_indexed_doc_count(index_dir) == 1
+
+
 def test_get_failed_files_returns_empty_list_when_index_directory_does_not_exist(
     bootstrap_module, workspace_tmp_path
 ):
@@ -419,6 +429,15 @@ def test_get_failed_files_collects_failed_file_locations_from_index_payloads(
         "one",
         {"failed.pdf": bootstrap_module.FAILED_DOCUMENT_ADD_ID, "ok.pdf": "OK"},
     )
+
+    assert bootstrap_module.get_failed_files(index_dir) == ["failed.pdf"]
+
+
+def test_get_failed_files_reads_direct_files_zip_when_index_dir_is_a_single_active_shard(
+    bootstrap_module, workspace_tmp_path
+):
+    index_dir = workspace_tmp_path / "index" / "active"
+    _write_files_zip(index_dir, "", {"failed.pdf": bootstrap_module.FAILED_DOCUMENT_ADD_ID})
 
     assert bootstrap_module.get_failed_files(index_dir) == ["failed.pdf"]
 
@@ -474,6 +493,12 @@ def test_build_settings_uses_shared_model_name_for_llm_summary_and_agent_llm(boo
     assert settings.agent.index.paper_directory == paper_dir
     assert settings.agent.index.index_directory == index_dir
     assert settings.agent.index.files_filter is bootstrap_module.only_manifest
+
+
+def test_build_settings_uses_custom_pdf_parser_with_fallback(bootstrap_module):
+    settings = bootstrap_module.build_settings()
+
+    assert settings.parsing.parse_pdf is bootstrap_module.parse_pdf_with_fallback
 
 
 def test_build_settings_uses_manifest_path_when_manifest_exists(bootstrap_module, workspace_tmp_path):
