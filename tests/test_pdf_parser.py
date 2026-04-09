@@ -38,6 +38,14 @@ def test_should_fallback_pdf_parse_returns_false_for_non_lookup_errors(pdf_parse
     assert pdf_parser_module.should_fallback_pdf_parse(error) is False
 
 
+def test_should_fallback_pdf_parse_returns_true_for_crop_exceeds_page_dimensions_value_error(
+    pdf_parser_module,
+):
+    error = ValueError("Crop exceeds page dimensions")
+
+    assert pdf_parser_module.should_fallback_pdf_parse(error) is True
+
+
 def test_resolve_pdfplumber_page_indexes_returns_all_pages_when_page_range_is_none(pdf_parser_module):
     assert pdf_parser_module.resolve_pdfplumber_page_indexes(None, total_pages=3) == [0, 1, 2]
 
@@ -125,6 +133,28 @@ def test_parse_pdf_with_fallback_uses_pdfplumber_when_pypdf_hits_symbol_set_enco
 
     assert parsed_pages == {"1": "fallback parser"}
     fallback_parser.assert_called_once_with("example.pdf", page_range=2)
+
+
+def test_parse_pdf_with_fallback_retries_without_media_when_primary_parser_hits_crop_exceeds_page_dimensions(
+    pdf_parser_module,
+):
+    paperqa_pypdf_module = ModuleType("paperqa_pypdf")
+    paperqa_pypdf_module.parse_pdf_to_pages = mock.Mock(side_effect=ValueError("Crop exceeds page dimensions"))
+
+    with mock.patch.dict(sys.modules, {"paperqa_pypdf": paperqa_pypdf_module}):
+        with mock.patch.object(
+            pdf_parser_module,
+            "parse_pdf_with_pdfplumber",
+            return_value={"1": "fallback parser"},
+        ) as fallback_parser:
+            parsed_pages = pdf_parser_module.parse_pdf_with_fallback(
+                "example.pdf",
+                page_range=2,
+                parse_media=True,
+            )
+
+    assert parsed_pages == {"1": "fallback parser"}
+    fallback_parser.assert_called_once_with("example.pdf", page_range=2, parse_media=False)
 
 
 def test_parse_pdf_with_fallback_reraises_lookup_errors_that_do_not_match_symbol_set_encoding(

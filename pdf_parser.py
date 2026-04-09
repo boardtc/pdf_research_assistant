@@ -8,7 +8,12 @@ from pathlib import Path
 
 def should_fallback_pdf_parse(error: BaseException) -> bool:
     """Return whether a parser error matches the known SymbolSetEncoding failure."""
-    return isinstance(error, LookupError) and "/SymbolSetEncoding" in str(error)
+    return (
+        isinstance(error, LookupError)
+        and "/SymbolSetEncoding" in str(error)
+        or isinstance(error, ValueError)
+        and "Crop exceeds page dimensions" in str(error)
+    )
 
 
 def resolve_pdfplumber_page_indexes(
@@ -67,4 +72,8 @@ def parse_pdf_with_fallback(path: str | Path, **kwargs: object) -> dict[str, str
     except Exception as exc:
         if not should_fallback_pdf_parse(exc):
             raise
+        if isinstance(exc, ValueError) and "Crop exceeds page dimensions" in str(exc):
+            safe_kwargs = dict(kwargs)
+            safe_kwargs["parse_media"] = False
+            return parse_pdf_with_pdfplumber(path, **safe_kwargs)
     return parse_pdf_with_pdfplumber(path, **kwargs)
