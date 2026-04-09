@@ -8,4 +8,7 @@ __pycache__/
 useful-commands.md
 tests/.tmp/
 .coverage
+*.coverage
 .pytest_cache/
+test-results/
+AGENTS.md

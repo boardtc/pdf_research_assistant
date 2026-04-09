@@ -4,7 +4,7 @@
 ![MIT License](https://img.shields.io/badge/license-MIT-green)
 ![PaperQA2](https://img.shields.io/badge/PaperQA2-FutureHouse-orange)
 
-A local PDF Research Assistant built with [PaperQA2](https://github.com/Future-House/paper-qa), using either a manifest-controlled document library or all PDFs under a chosen root folder.
+A local PDF research assistant built with [PaperQA2](https://github.com/Future-House/paper-qa). It can use either a manifest-controlled document library or all PDFs under a chosen root folder.
 
 Core indexing and querying work on Windows, macOS, and Linux. The Streamlit `Copy answer` clipboard button is currently Windows-only.
 
@@ -31,11 +31,11 @@ Create an OpenAI API key in the OpenAI dashboard:
 
 - [https://platform.openai.com/api-keys](https://platform.openai.com/api-keys)
 
-### First-Time Setup
+### Setup
 
 1. Copy `.env.example` to `.env`.
 2. Set `OPENAI_API_KEY` in `.env`.
-3. Set `PAPER_DIR` in `.env` to the common root folder containing your PDFs.
+3. Set `PAPER_DIR` in `.env` to the root folder containing your PDFs.
 4. Optional: copy `manifest.example.csv` to `manifest.csv` if you want curated scope and metadata.
 5. If you use `manifest.csv`, replace the example rows with paths relative to your chosen `PAPER_DIR`.
 
@@ -48,7 +48,7 @@ cd ~/gitrepos/pdf-research-assistant
 streamlit run pdf_research_assistant.py
 ```
 
-Streamlit usually opens the app in your browser automatically and also prints the local URL in the terminal. By default, it uses `http://localhost:8501` unless that port is already in use.
+Streamlit usually opens the app in your browser automatically and prints the local URL in the terminal. By default, it uses `http://localhost:8501` unless that port is already in use.
 
 The Streamlit sidebar shows:
 
@@ -63,7 +63,7 @@ Each assistant response also includes:
 
 Clipboard support for the `Copy answer` button is currently implemented for Windows only.
 
-On first use, there is no search index yet. The first query builds it, and for a large PDF library this can take a while.
+On first use, there is no search index yet. The first query builds it, which can take a while for a large PDF library.
 
 Each question runs in a fresh helper process so repeated questions in the same session start with clean query state.
 
@@ -78,7 +78,7 @@ Type a question at the prompt to search your indexed PDFs and return a cited ans
 
 Like the Streamlit app, the CLI runs each question in a fresh helper process so repeated questions start with clean query state.
 
-### Rebuild the Index
+### Rebuild Index
 
 ```bash
 cd ~/gitrepos/pdf-research-assistant
@@ -95,11 +95,11 @@ On a clean rebuild, it is normal to see `Manifest PDFs: <n>` and `Indexed before
 
 See `windows-helper-commands.example.md` for optional PowerShell commands that help check index build progress and troubleshoot rebuild issues on Windows. If you want a version with your own local paths ready to copy and paste, create `windows-helper-commands.md` from it.
 
-## Configuration
+## Environment Variables
 
-The app and CLI read configuration from environment variables and also load values from `.env` when present.
+The app and CLI read settings from environment variables and load values from `.env` when present.
 
-By default, `INDEX_DIR` and `MANIFEST_PATH` are resolved relative to the repository root, so the project can be moved without changing code. `PAPER_DIR` can point to any folder on your system using normal paths for your OS. If `manifest.csv` is present, it stores paths relative to that one common PDF root. If `manifest.csv` is absent, the app will index all PDFs under `PAPER_DIR`.
+By default, `INDEX_DIR` and `MANIFEST_PATH` are resolved relative to the repository root, so the project can be moved without changing code. `PAPER_DIR` can point to any folder on your system using normal paths for your OS. If `manifest.csv` is present, it stores paths relative to that root folder. If `manifest.csv` is absent, the app indexes all PDFs under `PAPER_DIR`.
 
 | Variable | Purpose | Default |
 | --- | --- | --- |
@@ -109,11 +109,11 @@ By default, `INDEX_DIR` and `MANIFEST_PATH` are resolved relative to the reposit
 | `MANIFEST_PATH` | Optional CSV manifest of allowed PDFs | `<repo-root>/manifest.csv` |
 | `PDF_RESEARCH_ASSISTANT_SYNC_DIR` | Optional destination folder for post-push copies of `.env`, `manifest.csv`, and your private `windows-helper-commands.md` notes | unset |
 
-See `.env.example` for the expected keys. Leave `INDEX_DIR` and `MANIFEST_PATH` unset if you want to use the repo-root defaults.
+See `.env.example` for the expected keys. Leave `INDEX_DIR` and `MANIFEST_PATH` unset to use the repo-root defaults.
 
-If `PDF_RESEARCH_ASSISTANT_SYNC_DIR` is set, the tracked `post-push` hook copies `.env` and `manifest.csv` when present. It also copies `windows-helper-commands.md` if you have created a private local version for yourself.
+If `PDF_RESEARCH_ASSISTANT_SYNC_DIR` is set, the tracked `post-push` hook copies `.env` and `manifest.csv` when present. It also copies `windows-helper-commands.md` if you created a private local version for your own use.
 
-## Notes
+## Additional Notes
 
 - The search index is stored in the folder set by `INDEX_DIR`.
 - If `manifest.csv` exists, the app uses it to decide which PDFs are in scope and which metadata to use.
