@@ -5,7 +5,7 @@ index_*/
 __pycache__/
 *.pyc
 *.html
-useful-commands.md
+windows-helper-commands.md
 tests/.tmp/
 .coverage
 *.coverage

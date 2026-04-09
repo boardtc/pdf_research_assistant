@@ -359,6 +359,18 @@ def test_get_indexed_doc_count_deduplicates_same_document_seen_in_multiple_index
         assert bootstrap_module.get_indexed_doc_count(index_dir) == 1
 
 
+def test_get_active_index_dir_returns_current_settings_shard_path(bootstrap_module, workspace_tmp_path):
+    fake_settings = SimpleNamespace(
+        agent=SimpleNamespace(index=SimpleNamespace(index_directory=workspace_tmp_path / "index")),
+        get_index_name=mock.Mock(return_value="pqa_index_active"),
+    )
+
+    result = bootstrap_module.get_active_index_dir(fake_settings)
+
+    assert result == workspace_tmp_path / "index" / "pqa_index_active"
+    fake_settings.get_index_name.assert_called_once_with()
+
+
 def test_get_indexed_doc_count_normalizes_absolute_indexed_paths_before_manifest_comparison(
     bootstrap_module, workspace_tmp_path
 ):

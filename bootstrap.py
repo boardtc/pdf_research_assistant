@@ -127,6 +127,12 @@ def iter_index_file_archives(index_dir: Path) -> list[Path]:
     return list(index_dir.glob("*/files.zip"))
 
 
+def get_active_index_dir(settings: Settings | None = None) -> Path:
+    """Return the active PaperQA index directory for the current settings hash."""
+    current_settings = settings or build_settings()
+    return Path(current_settings.agent.index.index_directory) / current_settings.get_index_name()
+
+
 def get_indexed_doc_count(index_dir: Path = INDEX_DIR) -> int:
     """Count indexed PDFs that are in scope for the current manifest settings."""
     if not index_dir.exists():

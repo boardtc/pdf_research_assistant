@@ -4,7 +4,7 @@ These are example PowerShell commands that proved useful while running, checking
 
 Replace placeholder paths like `<repo-root>` and `<your-pdf-root>` with your own local paths.
 
-## Check Current Indexed Count
+## Check Current Active Indexed Count
 
 ```powershell
 @'
@@ -13,26 +13,27 @@ from pathlib import Path
 
 repo = Path(r'<repo-root>')
 manifest_path = repo / 'manifest.csv'
-index_root = repo / 'index'
+active_files_zip = repo / 'index' / '<active-index-name>' / 'files.zip'
 
-with open(manifest_path, newline='', encoding='utf-8') as f:
+with open(manifest_path, newline='', encoding='utf-8-sig') as f:
     rows = list(csv.DictReader(f))
 
-manifest_set = {str(Path(row['file_location']).as_posix()) for row in rows if row.get('file_location')}
+manifest_set = {row['file_location'].replace('/', '\\') for row in rows if row.get('file_location')}
+data = pickle.loads(zlib.decompress(active_files_zip.read_bytes()))
 
 indexed = set()
-for p in index_root.glob('*/files.zip'):
-    data = pickle.loads(zlib.decompress(p.read_bytes()))
-    for file_location, status in data.items():
-        if status == 'ERROR':
-            continue
-        normalized = str(Path(file_location).as_posix())
-        if normalized in manifest_set:
-            indexed.add(normalized)
+for file_location, status in data.items():
+    if status == 'ERROR':
+        continue
+    normalized = str(file_location).replace('/', '\\')
+    if normalized in manifest_set:
+        indexed.add(normalized)
 
 print(len(indexed))
 '@ | python -
 ```
+
+Use the active shard folder name printed by your most recent rebuild or visible under `<repo-root>\index`, for example `pqa_index_cc6c1744115a46e85b221f1f29f61f2d`.
 
 ## Check Whether Rebuild Is Still Running
 
@@ -53,22 +54,27 @@ Get-ChildItem -Recurse <repo-root>\index | Sort-Object LastWriteTime -Descending
 import csv, pickle, zlib
 from pathlib import Path
 
-manifest = Path(r'<repo-root>\manifest.csv')
-index_root = Path(r'<repo-root>\index')
+repo = Path(r'<repo-root>')
+manifest_path = repo / 'manifest.csv'
+active_files_zip = repo / 'index' / '<active-index-name>' / 'files.zip'
 
-with open(manifest, newline='', encoding='utf-8-sig') as f:
+with open(manifest_path, newline='', encoding='utf-8-sig') as f:
     manifest_rows = list(csv.DictReader(f))
 
-manifest_files = {str(Path(row['file_location']).as_posix()) for row in manifest_rows}
+manifest_files = {
+    row['file_location'].replace('/', '\\')
+    for row in manifest_rows
+    if row.get('file_location')
+}
 
-indexed = {}
-for p in index_root.glob('*/files.zip'):
-    indexed.update(pickle.loads(zlib.decompress(p.read_bytes())))
+data = pickle.loads(zlib.decompress(active_files_zip.read_bytes()))
+indexed_ok = {
+    str(file_location).replace('/', '\\')
+    for file_location, status in data.items()
+    if status != 'ERROR'
+}
 
-missing = sorted(
-    f for f in manifest_files
-    if f not in {str(Path(k).as_posix()) for k in indexed}
-)
+missing = sorted(manifest_files - indexed_ok)
 print('Missing:', len(missing))
 for m in missing:
     print(m)

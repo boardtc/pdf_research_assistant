@@ -47,6 +47,7 @@ def imported_pdf_research_assistant(
 ):
     streamlit_module = ModuleType("streamlit")
     bootstrap_module = ModuleType("bootstrap")
+    active_index_dir = Path(r"C:\index\active-shard")
 
     streamlit_module.session_state = _SessionState()
     if app_state:
@@ -77,6 +78,7 @@ def imported_pdf_research_assistant(
     bootstrap_module.get_allowed_paths = mock.Mock(return_value=set() if allowed_paths is None else allowed_paths)
     bootstrap_module.get_failed_files = mock.Mock(return_value=[] if failed_files is None else failed_files)
     bootstrap_module.get_indexed_doc_count = mock.Mock(return_value=indexed_count)
+    bootstrap_module.get_active_index_dir = mock.Mock(return_value=active_index_dir)
 
     with mock.patch.dict(
         sys.modules,
@@ -397,6 +399,19 @@ def test_import_shows_manifest_index_caption_when_manifest_index_is_available():
         indexed_count=2,
     ) as module:
         module.st.caption.assert_any_call("Index available for 2 manifest PDFs.")
+
+
+def test_import_uses_the_active_index_directory_for_startup_index_counts_and_failed_files():
+    active_index_dir = Path(r"C:\index\active-shard")
+
+    with imported_pdf_research_assistant(
+        allowed_paths={"paper_a.pdf", "paper_b.pdf"},
+        indexed_count=2,
+        failed_files=[],
+    ) as module:
+        module.bootstrap.get_active_index_dir.assert_called_once_with()
+        module.bootstrap.get_indexed_doc_count.assert_called_once_with(index_dir=active_index_dir)
+        module.bootstrap.get_failed_files.assert_called_once_with(index_dir=active_index_dir)
 
 
 def test_import_shows_failed_files_error_and_lists_each_failed_file():

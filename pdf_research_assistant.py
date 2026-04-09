@@ -10,7 +10,7 @@ import streamlit as st
 
 os.environ.setdefault("PQA_INDEX_DONT_CACHE_INDEXES", "true")
 
-from bootstrap import get_allowed_paths, get_failed_files, get_indexed_doc_count
+import bootstrap
 
 
 def flatten_exception_messages(exc, depth=0):
@@ -100,11 +100,12 @@ def sync_persistent_state(app_state: dict) -> None:
 
 st.title("PDF Research Assistant")
 
-allowed_paths = get_allowed_paths()
+allowed_paths = bootstrap.get_allowed_paths()
 use_manifest_scope = bool(allowed_paths)
 manifest_count = len(allowed_paths)
-indexed_count = get_indexed_doc_count()
-failed_files = get_failed_files()
+active_index_dir = bootstrap.get_active_index_dir()
+indexed_count = bootstrap.get_indexed_doc_count(index_dir=active_index_dir)
+failed_files = bootstrap.get_failed_files(index_dir=active_index_dir)
 
 if indexed_count == 0 and use_manifest_scope:
     st.warning(
