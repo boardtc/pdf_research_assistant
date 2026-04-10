@@ -5,10 +5,10 @@ This project keeps test tooling separate from runtime dependencies so standard u
 ## Install test dependencies
 
 ```powershell
-python -m pip install -r requirements-dev.txt
+python -m pip install -e .[dev]
 ```
 
-That file now installs the package in editable mode with the `dev` extras defined in `pyproject.toml`.
+This installs the package in editable mode together with the `dev` extras defined in `pyproject.toml`.
 
 ## Enable the pre-push test hook
 

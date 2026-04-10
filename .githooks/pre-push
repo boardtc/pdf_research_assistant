@@ -8,7 +8,7 @@ if ! python -m pytest; then
   status=$?
   echo
   echo "Push blocked because the test suite failed."
-  echo "Install test dependencies with: python -m pip install -r requirements-dev.txt"
+  echo "Install test dependencies with: python -m pip install -e .[dev]"
   exit "$status"
 fi
 

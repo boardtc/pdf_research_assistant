@@ -27,12 +27,6 @@ cd ~/gitrepos/pdf-research-assistant
 python -m pip install -e .
 ```
 
-For development tools such as `pytest` and coverage reporting:
-
-```bash
-python -m pip install -e .[dev]
-```
-
 Create an OpenAI API key in the OpenAI dashboard:
 
 - [https://platform.openai.com/api-keys](https://platform.openai.com/api-keys)
