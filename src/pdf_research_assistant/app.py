@@ -8,9 +8,9 @@ from pathlib import Path
 
 import streamlit as st
 
-os.environ.setdefault("PQA_INDEX_DONT_CACHE_INDEXES", "true")
+from pdf_research_assistant import bootstrap
 
-import bootstrap
+os.environ.setdefault("PQA_INDEX_DONT_CACHE_INDEXES", "true")
 
 
 def flatten_exception_messages(exc, depth=0):
@@ -205,3 +205,4 @@ if question:
     st.session_state.query_count += 1
     sync_persistent_state(app_state)
     st.rerun()
+

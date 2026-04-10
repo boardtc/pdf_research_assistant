@@ -14,7 +14,7 @@ from paperqa import Docs
 from paperqa.agents.main import run_agent
 from paperqa.utils import run_or_ensure
 
-from bootstrap import build_settings
+from pdf_research_assistant.bootstrap import build_settings
 
 
 def serialize_contexts(contexts):
@@ -72,3 +72,4 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+

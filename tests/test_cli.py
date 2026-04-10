@@ -8,17 +8,12 @@ from unittest import mock
 import pytest
 
 
-PROJECT_ROOT = Path(__file__).resolve().parents[1]
-if str(PROJECT_ROOT) not in sys.path:
-    sys.path.insert(0, str(PROJECT_ROOT))
-
-
 @pytest.fixture
 def query_papers_module():
-    sys.modules.pop("query_papers", None)
-    module = importlib.import_module("query_papers")
+    sys.modules.pop("pdf_research_assistant.cli", None)
+    module = importlib.import_module("pdf_research_assistant.cli")
     yield module
-    sys.modules.pop("query_papers", None)
+    sys.modules.pop("pdf_research_assistant.cli", None)
 
 
 def test_main_returns_zero_when_user_quits_immediately(query_papers_module):

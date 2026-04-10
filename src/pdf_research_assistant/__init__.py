@@ -1,0 +1,2 @@
+"""PDF Research Assistant package."""
+

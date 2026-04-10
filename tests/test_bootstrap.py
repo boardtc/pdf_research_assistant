@@ -11,10 +11,7 @@ from unittest import mock
 
 import pytest
 
-
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
-if str(PROJECT_ROOT) not in sys.path:
-    sys.path.insert(0, str(PROJECT_ROOT))
 
 
 class _CaptureConfig:
@@ -76,12 +73,16 @@ def bootstrap_module(workspace_tmp_path):
                 "paperqa": paperqa_module,
                 "paperqa.settings": paperqa_settings_module,
                 "dotenv": dotenv_module,
+                "pdf_research_assistant.pdf_parser": ModuleType("pdf_research_assistant.pdf_parser"),
             },
         ):
-            sys.modules.pop("bootstrap", None)
-            module = importlib.import_module("bootstrap")
+            sys.modules["pdf_research_assistant.pdf_parser"].parse_pdf_with_fallback = mock.Mock(
+                name="parse_pdf_with_fallback"
+            )
+            sys.modules.pop("pdf_research_assistant.bootstrap", None)
+            module = importlib.import_module("pdf_research_assistant.bootstrap")
             yield module
-            sys.modules.pop("bootstrap", None)
+            sys.modules.pop("pdf_research_assistant.bootstrap", None)
 
 
 def test_import_with_existing_manifest_populates_allowed_paths(workspace_tmp_path):
@@ -113,14 +114,18 @@ def test_import_with_existing_manifest_populates_allowed_paths(workspace_tmp_pat
                 "paperqa": paperqa_module,
                 "paperqa.settings": paperqa_settings_module,
                 "dotenv": dotenv_module,
+                "pdf_research_assistant.pdf_parser": ModuleType("pdf_research_assistant.pdf_parser"),
             },
         ):
-            sys.modules.pop("bootstrap", None)
-            module = importlib.import_module("bootstrap")
+            sys.modules["pdf_research_assistant.pdf_parser"].parse_pdf_with_fallback = mock.Mock(
+                name="parse_pdf_with_fallback"
+            )
+            sys.modules.pop("pdf_research_assistant.bootstrap", None)
+            module = importlib.import_module("pdf_research_assistant.bootstrap")
             try:
                 assert module.ALLOWED_PATHS == {"folder/paper.pdf"}
             finally:
-                sys.modules.pop("bootstrap", None)
+                sys.modules.pop("pdf_research_assistant.bootstrap", None)
 
 
 def test_sanitize_proxy_environment_leaves_environment_unchanged_when_no_proxy_variables_are_set(bootstrap_module):

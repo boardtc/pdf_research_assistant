@@ -38,7 +38,7 @@ Use the active shard folder name printed by your most recent rebuild or visible 
 ## Check Whether Rebuild Is Still Running
 
 ```powershell
-Get-CimInstance Win32_Process | Where-Object { $_.CommandLine -like '*rebuild_index.py*' } | Select-Object ProcessId, Name, CommandLine
+Get-CimInstance Win32_Process | Where-Object { $_.CommandLine -like '*pdf-research-rebuild*' } | Select-Object ProcessId, Name, CommandLine
 ```
 
 ## Check Recent Index File Activity
@@ -97,21 +97,21 @@ Stop-Process -Id <PID> -Force
 
 ```powershell
 cd <repo-root>
-python rebuild_index.py
+pdf-research-rebuild
 ```
 
 ## Run The Streamlit UI
 
 ```powershell
 cd <repo-root>
-streamlit run pdf_research_assistant.py
+streamlit run src/pdf_research_assistant/app.py
 ```
 
 ## What Helped Most
 
 - Check the terminal output, not just the Streamlit UI
-- Confirm whether `rebuild_index.py` is still running
+- Confirm whether `pdf-research-rebuild` is still running
 - Check the indexed count on disk
 - Compare `manifest.csv` against the indexed files
 - Look for duplicate or stuck Streamlit/Python processes
-- Use `python rebuild_index.py` for a controlled rebuild instead of relying only on first-query indexing
+- Use `pdf-research-rebuild` for a controlled rebuild instead of relying only on first-query indexing

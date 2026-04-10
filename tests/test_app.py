@@ -9,11 +9,6 @@ from unittest import mock
 import pytest
 
 
-PROJECT_ROOT = Path(__file__).resolve().parents[1]
-if str(PROJECT_ROOT) not in sys.path:
-    sys.path.insert(0, str(PROJECT_ROOT))
-
-
 class _ContextManagerStub:
     def __enter__(self):
         return self
@@ -46,7 +41,7 @@ def imported_pdf_research_assistant(
     traceback_lines=None,
 ):
     streamlit_module = ModuleType("streamlit")
-    bootstrap_module = ModuleType("bootstrap")
+    bootstrap_module = ModuleType("pdf_research_assistant.bootstrap")
     active_index_dir = Path(r"C:\index\active-shard")
 
     streamlit_module.session_state = _SessionState()
@@ -84,7 +79,7 @@ def imported_pdf_research_assistant(
         sys.modules,
         {
             "streamlit": streamlit_module,
-            "bootstrap": bootstrap_module,
+            "pdf_research_assistant.bootstrap": bootstrap_module,
         },
     ):
         if subprocess_result is None:
@@ -97,12 +92,12 @@ def imported_pdf_research_assistant(
                 "traceback.format_exception",
                 return_value=(traceback_lines if traceback_lines is not None else ["trace line\n"]),
             ):
-                sys.modules.pop("pdf_research_assistant", None)
-                module = importlib.import_module("pdf_research_assistant")
+                sys.modules.pop("pdf_research_assistant.app", None)
+                module = importlib.import_module("pdf_research_assistant.app")
                 try:
                     yield module
                 finally:
-                    sys.modules.pop("pdf_research_assistant", None)
+                    sys.modules.pop("pdf_research_assistant.app", None)
 
 
 @pytest.fixture

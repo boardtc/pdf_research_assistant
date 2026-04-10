@@ -1,23 +1,17 @@
 import importlib
 import sys
-from pathlib import Path
 from types import ModuleType
 from unittest import mock
 
 import pytest
 
 
-PROJECT_ROOT = Path(__file__).resolve().parents[1]
-if str(PROJECT_ROOT) not in sys.path:
-    sys.path.insert(0, str(PROJECT_ROOT))
-
-
 @pytest.fixture
 def pdf_parser_module():
-    sys.modules.pop("pdf_parser", None)
-    module = importlib.import_module("pdf_parser")
+    sys.modules.pop("pdf_research_assistant.pdf_parser", None)
+    module = importlib.import_module("pdf_research_assistant.pdf_parser")
     yield module
-    sys.modules.pop("pdf_parser", None)
+    sys.modules.pop("pdf_research_assistant.pdf_parser", None)
 
 
 def test_should_fallback_pdf_parse_returns_true_for_symbol_set_lookup_error(pdf_parser_module):

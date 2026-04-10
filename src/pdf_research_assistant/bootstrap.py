@@ -15,7 +15,8 @@ from urllib.parse import urlparse
 from dotenv import load_dotenv
 from paperqa import Settings
 from paperqa.settings import AgentSettings, IndexSettings, ParsingSettings
-from pdf_parser import parse_pdf_with_fallback
+
+from pdf_research_assistant.pdf_parser import parse_pdf_with_fallback
 
 load_dotenv()
 
@@ -25,7 +26,8 @@ os.environ.setdefault("PQA_INDEX_DONT_CACHE_INDEXES", "true")
 PROXY_ENV_VARS = ("HTTP_PROXY", "HTTPS_PROXY", "ALL_PROXY")
 LOOPBACK_PROXY_HOSTS = {"127.0.0.1", "localhost", "::1"}
 
-PROJECT_ROOT = Path(__file__).resolve().parent
+PACKAGE_ROOT = Path(__file__).resolve().parent
+PROJECT_ROOT = PACKAGE_ROOT.parents[1]
 DEFAULT_INDEX_DIR = PROJECT_ROOT / "index"
 DEFAULT_MANIFEST_PATH = PROJECT_ROOT / "manifest.csv"
 FAILED_DOCUMENT_ADD_ID = "ERROR"
@@ -192,3 +194,4 @@ def build_settings() -> Settings:
             ),
         ),
     )
+

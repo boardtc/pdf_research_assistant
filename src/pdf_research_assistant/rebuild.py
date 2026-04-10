@@ -4,7 +4,8 @@ import zlib
 from pathlib import Path
 
 from paperqa.agents.search import get_directory_index
-from bootstrap import (
+
+from pdf_research_assistant.bootstrap import (
     ALLOWED_PATHS,
     FAILED_DOCUMENT_ADD_ID,
     USE_MANIFEST,
@@ -52,7 +53,7 @@ def clear_failed_documents_from_active_index(index_dir: Path) -> int:
     return removed_count
 
 
-async def main():
+async def async_main():
     """Rebuild the PaperQA directory index and print a short before/after status summary."""
     active_index_dir = get_active_index_dir()
     if USE_MANIFEST:
@@ -81,5 +82,11 @@ async def main():
         print(f"FAILED: {file_location}")
 
 
+def main() -> int:
+    """Run the async rebuild workflow from console-script entry points."""
+    asyncio.run(async_main())
+    return 0
+
+
 if __name__ == "__main__":
-    asyncio.run(main())
+    raise SystemExit(main())

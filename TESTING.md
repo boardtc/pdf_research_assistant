@@ -8,6 +8,8 @@ This project keeps test tooling separate from runtime dependencies so standard u
 python -m pip install -r requirements-dev.txt
 ```
 
+That file now installs the package in editable mode with the `dev` extras defined in `pyproject.toml`.
+
 ## Enable the pre-push test hook
 
 This repository includes a versioned Git `pre-push` hook in `.githooks/pre-push` that runs the full test suite before each push.
@@ -68,15 +70,15 @@ python -m pytest tests\test_bootstrap.py
 ```
 
 ```powershell
-python -m pytest tests\test_pdf_research_assistant.py
+python -m pytest tests\test_app.py
 ```
 
 ```powershell
-python -m pytest tests\test_query_papers.py
+python -m pytest tests\test_cli.py
 ```
 
 ```powershell
-python -m pytest tests\test_rebuild_index.py
+python -m pytest tests\test_rebuild.py
 ```
 
 ## Run one test with verbose output
@@ -90,37 +92,37 @@ python -m pytest -v tests\test_bootstrap.py
 ```
 
 ```powershell
-python -m pytest -v tests\test_pdf_research_assistant.py
+python -m pytest -v tests\test_app.py
 ```
 
 ```powershell
-python -m pytest -v tests\test_query_papers.py
+python -m pytest -v tests\test_cli.py
 ```
 
 ```powershell
-python -m pytest -v tests\test_rebuild_index.py
+python -m pytest -v tests\test_rebuild.py
 ```
 
 ## Run coverage for one file
 
 ```powershell
-python -m pytest tests\test_query_once.py --cov=query_once --cov-report=term-missing
+python -m pytest tests\test_query_once.py --cov=pdf_research_assistant.query_once --cov-report=term-missing
 ```
 
 ```powershell
-python -m pytest tests\test_bootstrap.py --cov=bootstrap --cov-report=term-missing
+python -m pytest tests\test_bootstrap.py --cov=pdf_research_assistant.bootstrap --cov-report=term-missing
 ```
 
 ```powershell
-python -m pytest tests\test_pdf_research_assistant.py --cov=pdf_research_assistant --cov-report=term-missing
+python -m pytest tests\test_app.py --cov=pdf_research_assistant.app --cov-report=term-missing
 ```
 
 ```powershell
-python -m pytest tests\test_query_papers.py --cov=query_papers --cov-report=term-missing
+python -m pytest tests\test_cli.py --cov=pdf_research_assistant.cli --cov-report=term-missing
 ```
 
 ```powershell
-python -m pytest tests\test_rebuild_index.py --cov=rebuild_index --cov-report=term-missing
+python -m pytest tests\test_rebuild.py --cov=pdf_research_assistant.rebuild --cov-report=term-missing
 ```
 
 ## Run coverage for the whole project
@@ -134,9 +136,9 @@ python -m pytest --cov=. --cov-report=term-missing
 - Unit tests use `pytest` as the test runner.
 - Coverage reporting uses `pytest-cov`.
 - Mocking uses Python's built-in `unittest.mock`.
-- Current unit test files are `tests/test_query_once.py`, `tests/test_bootstrap.py`, `tests/test_pdf_research_assistant.py`, `tests/test_query_papers.py`, and `tests/test_rebuild_index.py`.
-- `query_once.py` and `bootstrap.py` have straightforward function-oriented tests.
-- `pdf_research_assistant.py` includes heavier mocking because the Streamlit page executes UI logic at import time.
+- Current unit test files are `tests/test_query_once.py`, `tests/test_bootstrap.py`, `tests/test_app.py`, `tests/test_cli.py`, and `tests/test_rebuild.py`.
+- `src/pdf_research_assistant/query_once.py` and `src/pdf_research_assistant/bootstrap.py` have straightforward function-oriented tests.
+- `src/pdf_research_assistant/app.py` includes heavier mocking because the Streamlit page executes UI logic at import time.
 
 ## Where to record results
 

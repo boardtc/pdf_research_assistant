@@ -11,11 +11,7 @@ from unittest import mock
 
 import pytest
 
-
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
-if str(PROJECT_ROOT) not in sys.path:
-    sys.path.insert(0, str(PROJECT_ROOT))
-
 
 def _write_files_zip(index_dir: Path, payload: dict) -> None:
     index_dir.mkdir(parents=True, exist_ok=True)
@@ -34,7 +30,7 @@ def workspace_tmp_path():
 
 @pytest.fixture
 def rebuild_index_module():
-    bootstrap_module = ModuleType("bootstrap")
+    bootstrap_module = ModuleType("pdf_research_assistant.bootstrap")
     search_module = ModuleType("paperqa.agents.search")
     settings_object = mock.Mock()
     settings_object.agent.index.index_directory = Path("index-root")
@@ -52,14 +48,14 @@ def rebuild_index_module():
     with mock.patch.dict(
         sys.modules,
         {
-            "bootstrap": bootstrap_module,
+            "pdf_research_assistant.bootstrap": bootstrap_module,
             "paperqa.agents.search": search_module,
         },
     ):
-        sys.modules.pop("rebuild_index", None)
-        module = importlib.import_module("rebuild_index")
+        sys.modules.pop("pdf_research_assistant.rebuild", None)
+        module = importlib.import_module("pdf_research_assistant.rebuild")
         yield module
-        sys.modules.pop("rebuild_index", None)
+        sys.modules.pop("pdf_research_assistant.rebuild", None)
 
 
 def test_main_prints_manifest_summary_and_rebuild_counts_when_manifest_is_enabled(rebuild_index_module):
@@ -70,7 +66,7 @@ def test_main_prints_manifest_summary_and_rebuild_counts_when_manifest_is_enable
 
     # Mock print so the test can assert on the CLI status output.
     with mock.patch("builtins.print") as print_mock:
-        asyncio.run(rebuild_index_module.main())
+        asyncio.run(rebuild_index_module.async_main())
 
     rebuild_index_module.get_directory_index.assert_awaited_once_with(
         settings=rebuild_index_module.settings,
@@ -91,7 +87,7 @@ def test_main_prints_non_manifest_summary_when_manifest_file_is_missing(rebuild_
 
     # Mock print so the test can assert on the non-manifest branch output.
     with mock.patch("builtins.print") as print_mock:
-        asyncio.run(rebuild_index_module.main())
+        asyncio.run(rebuild_index_module.async_main())
 
     assert print_mock.call_args_list == [
         mock.call("Manifest PDFs: manifest.csv not found; indexing all PDFs under PAPER_DIR"),
@@ -109,7 +105,7 @@ def test_main_prints_each_failed_file_after_rebuild(rebuild_index_module):
 
     # Mock print so the test can assert that each failed file is reported individually.
     with mock.patch("builtins.print") as print_mock:
-        asyncio.run(rebuild_index_module.main())
+        asyncio.run(rebuild_index_module.async_main())
 
     assert print_mock.call_args_list == [
         mock.call("Manifest PDFs: 1"),
@@ -137,7 +133,7 @@ def test_main_retries_previously_failed_documents_from_the_active_index_before_r
         return_value=1,
     ) as clear_failed_mock:
         with mock.patch("builtins.print") as print_mock:
-            asyncio.run(rebuild_index_module.main())
+            asyncio.run(rebuild_index_module.async_main())
 
     clear_failed_mock.assert_called_once_with(active_index_dir)
     rebuild_index_module.get_indexed_doc_count.assert_has_calls(
@@ -167,7 +163,7 @@ def test_main_continues_when_directory_rebuild_raises_exception_group_and_report
     )
 
     with mock.patch("builtins.print") as print_mock:
-        asyncio.run(rebuild_index_module.main())
+        asyncio.run(rebuild_index_module.async_main())
 
     assert print_mock.call_args_list == [
         mock.call("Manifest PDFs: 1"),
@@ -197,7 +193,7 @@ def test_main_prints_exception_messages_when_directory_rebuild_raises_exception_
     )
 
     with mock.patch("builtins.print") as print_mock:
-        asyncio.run(rebuild_index_module.main())
+        asyncio.run(rebuild_index_module.async_main())
 
     assert print_mock.call_args_list == [
         mock.call("Manifest PDFs: 1"),
@@ -212,6 +208,14 @@ def test_main_prints_exception_messages_when_directory_rebuild_raises_exception_
 
 def test_summarize_exception_messages_returns_single_message_for_non_group_exception(rebuild_index_module):
     assert rebuild_index_module.summarize_exception_messages(ValueError("bad metadata")) == ["bad metadata"]
+
+
+def test_main_runs_async_main_and_returns_zero(rebuild_index_module):
+    with mock.patch.object(rebuild_index_module.asyncio, "run") as asyncio_run_mock:
+        assert rebuild_index_module.main() == 0
+
+    asyncio_run_mock.assert_called_once()
+    asyncio_run_mock.call_args.args[0].close()
 
 
 def test_summarize_exception_messages_flattens_nested_exception_groups_in_order(rebuild_index_module):

@@ -77,3 +77,4 @@ def parse_pdf_with_fallback(path: str | Path, **kwargs: object) -> dict[str, str
             safe_kwargs["parse_media"] = False
             return parse_pdf_with_pdfplumber(path, **safe_kwargs)
     return parse_pdf_with_pdfplumber(path, **kwargs)
+

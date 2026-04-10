@@ -8,18 +8,13 @@ from unittest import mock
 import pytest
 
 
-PROJECT_ROOT = Path(__file__).resolve().parents[1]
-if str(PROJECT_ROOT) not in sys.path:
-    sys.path.insert(0, str(PROJECT_ROOT))
-
-
 @pytest.fixture
 def query_once_module():
     paperqa_module = ModuleType("paperqa")
     agents_module = ModuleType("paperqa.agents")
     agents_main_module = ModuleType("paperqa.agents.main")
     utils_module = ModuleType("paperqa.utils")
-    bootstrap_module = ModuleType("bootstrap")
+    bootstrap_module = ModuleType("pdf_research_assistant.bootstrap")
 
     # Mock the PaperQA Docs constructor so importing query_once never needs the real dependency.
     paperqa_module.Docs = mock.Mock(name="Docs")
@@ -40,13 +35,13 @@ def query_once_module():
             "paperqa.agents": agents_module,
             "paperqa.agents.main": agents_main_module,
             "paperqa.utils": utils_module,
-            "bootstrap": bootstrap_module,
+            "pdf_research_assistant.bootstrap": bootstrap_module,
         },
     ):
-        sys.modules.pop("query_once", None)
-        module = importlib.import_module("query_once")
+        sys.modules.pop("pdf_research_assistant.query_once", None)
+        module = importlib.import_module("pdf_research_assistant.query_once")
         yield module
-        sys.modules.pop("query_once", None)
+        sys.modules.pop("pdf_research_assistant.query_once", None)
 
 
 def test_serialize_contexts_returns_empty_list_when_no_contexts_are_provided(query_once_module):

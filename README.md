@@ -24,7 +24,13 @@ Install the Python dependencies:
 
 ```bash
 cd ~/gitrepos/pdf-research-assistant
-pip install -r requirements.txt
+python -m pip install -e .
+```
+
+For development tools such as `pytest` and coverage reporting:
+
+```bash
+python -m pip install -e .[dev]
 ```
 
 Create an OpenAI API key in the OpenAI dashboard:
@@ -39,13 +45,23 @@ Create an OpenAI API key in the OpenAI dashboard:
 4. Optional: copy `manifest.example.csv` to `manifest.csv` if you want curated scope and metadata.
 5. If you use `manifest.csv`, replace the example rows with paths relative to your chosen `PAPER_DIR`.
 
+## Project Layout
+
+The code now uses a standard `src` layout:
+
+- `src/pdf_research_assistant/` is the Python package directory
+- `src/` keeps imports honest during development and testing
+- `pyproject.toml` defines dependencies and the `pdf-research` and `pdf-research-rebuild` commands
+
+The extra `pdf_research_assistant` folder under `src` is the actual importable package name, so imports like `from pdf_research_assistant.bootstrap import build_settings` continue to work cleanly.
+
 ## Usage
 
 ### Streamlit UI
 
 ```bash
 cd ~/gitrepos/pdf-research-assistant
-streamlit run pdf_research_assistant.py
+streamlit run src/pdf_research_assistant/app.py
 ```
 
 Streamlit usually opens the app in your browser automatically and prints the local URL in the terminal. By default, it uses `http://localhost:8501` unless that port is already in use.
@@ -71,7 +87,7 @@ Each question runs in a fresh helper process so repeated questions in the same s
 
 ```bash
 cd ~/gitrepos/pdf-research-assistant
-python query_papers.py
+pdf-research
 ```
 
 Type a question at the prompt to search your indexed PDFs and return a cited answer with page references. Type `quit` to exit.
@@ -82,7 +98,7 @@ Like the Streamlit app, the CLI runs each question in a fresh helper process so 
 
 ```bash
 cd ~/gitrepos/pdf-research-assistant
-python rebuild_index.py
+pdf-research-rebuild
 ```
 
 Use this when:
@@ -120,7 +136,7 @@ If `PDF_RESEARCH_ASSISTANT_SYNC_DIR` is set, the tracked `post-push` hook copies
 - If `manifest.csv` does not exist, the app indexes all PDFs under `PAPER_DIR`.
 - `windows-helper-commands.example.md` is a safe-to-share template. If you want a version with your own local paths ready to copy and paste, create `windows-helper-commands.md` from it.
 - The app automatically ignores the broken loopback proxy placeholder `127.0.0.1:9` if it appears in `HTTP_PROXY`, `HTTPS_PROXY`, or `ALL_PROXY`.
-- `query_once.py` is an internal helper used by the app and CLI; it is not intended as a separate user entry point.
+- `src/pdf_research_assistant/query_once.py` is an internal helper used by the app and CLI; it is not intended as a separate user entry point.
 - If PaperQA reports that a PDF is empty but the file opens normally, it may be image-only and need OCR before it can be indexed.
 - Answers cite specific pages from your PDFs when available.
 
@@ -128,5 +144,5 @@ If `PDF_RESEARCH_ASSISTANT_SYNC_DIR` is set, the tracked `post-push` hook copies
 
 1. Add the PDF under your configured `PAPER_DIR`.
 2. If you are using a manifest, add a row to `manifest.csv`.
-3. Rebuild the index with `python rebuild_index.py` before querying again.
+3. Rebuild the index with `pdf-research-rebuild` before querying again.
 4. Start the UI or CLI and ask a question about your PDFs.
