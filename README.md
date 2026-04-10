@@ -41,13 +41,13 @@ Create an OpenAI API key in the OpenAI dashboard:
 
 ## Project Layout
 
-The code now uses a standard `src` layout:
+This project uses a standard Python `src` layout.
 
-- `src/pdf_research_assistant/` is the Python package directory
-- `src/` keeps imports honest during development and testing
+- `src/pdf_research_assistant/` contains the application code
+- `tests/` contains the test suite
 - `pyproject.toml` defines dependencies and the `pdf-research` and `pdf-research-rebuild` commands
 
-The extra `pdf_research_assistant` folder under `src` is the actual importable package name, so imports like `from pdf_research_assistant.bootstrap import build_settings` continue to work cleanly.
+The `pdf_research_assistant` folder under `src` is the importable package, so code uses imports such as `from pdf_research_assistant.bootstrap import build_settings`.
 
 ## Usage
 
