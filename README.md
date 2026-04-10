@@ -134,6 +134,16 @@ If `PDF_RESEARCH_ASSISTANT_SYNC_DIR` is set, the tracked `post-push` hook copies
 - If PaperQA reports that a PDF is empty but the file opens normally, it may be image-only and need OCR before it can be indexed.
 - Answers cite specific pages from your PDFs when available.
 
+## Feature Requests
+
+Planned improvements are tracked in GitHub Issues.
+
+If an issue matters to you, please add a thumbs-up reaction to the issue instead of commenting `+1`. That makes it easier to see which ideas are most useful to potential users.
+
+- Browse open ideas: [GitHub Issues](https://github.com/boardtc/pdf-research-assistant/issues)
+- Use a thumbs-up reaction to vote for an idea
+- Add a comment if you have a specific use case or suggestion
+
 ## Adding New PDFs
 
 1. Add the PDF under your configured `PAPER_DIR`.
