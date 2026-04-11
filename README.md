@@ -138,6 +138,9 @@ If `PDF_RESEARCH_ASSISTANT_SYNC_DIR` is set, the tracked `post-push` hook copies
 
 Planned improvements are tracked in GitHub Issues.
 
+The current implementation order is tracked in the pinned roadmap issue:
+[Roadmap: Current Implementation Order](https://github.com/boardtc/pdf-research-assistant/issues/40)
+
 If an issue matters to you, please add a thumbs-up reaction to the issue instead of commenting `+1`. That makes it easier to see which ideas are most useful to potential users.
 
 - Browse open ideas: [GitHub Issues](https://github.com/boardtc/pdf-research-assistant/issues)
