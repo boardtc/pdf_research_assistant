@@ -27,6 +27,29 @@ cd ~/gitrepos/pdf-research-assistant
 python -m pip install -e .
 ```
 
+<details>
+<summary>More info: where do these commands come from?</summary>
+
+Running `python -m pip install -e .` installs this project in editable mode.
+
+That does two useful things:
+
+- it makes the `pdf_research_assistant` package importable in your current Python environment
+- it creates the `pdf-research` and `pdf-research-rebuild` console commands defined in `pyproject.toml`
+
+These are three ways to run the rebuild flow:
+
+- Installed console command:
+  `pdf-research-rebuild`
+- Module form:
+  `python -m pdf_research_assistant.rebuild`
+- Direct file path form:
+  `python src/pdf_research_assistant/rebuild.py`
+
+The first is the normal user-facing command. The second is a Python module form many developers prefer. The third is the old-school "run this file directly" form.
+
+</details>
+
 Create an OpenAI API key in the OpenAI dashboard:
 
 - [https://platform.openai.com/api-keys](https://platform.openai.com/api-keys)
@@ -98,7 +121,7 @@ pdf-research-rebuild
 Use this when:
 
 - running the project for the first time and you want to build the index explicitly
-- you add new PDFs and want to rebuild before querying again
+- you add new PDFs and want to rebuild the index before querying again
 - you want a terminal-only indexing run instead of letting the first query build the index
 
 On a clean rebuild, it is normal to see `Manifest PDFs: <n>` and `Indexed before run: 0` before indexing starts.
